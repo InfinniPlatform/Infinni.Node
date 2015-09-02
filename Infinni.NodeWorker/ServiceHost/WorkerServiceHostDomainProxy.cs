@@ -103,7 +103,6 @@ namespace Infinni.NodeWorker.ServiceHost
 			var domainFriendlyName = GetDomainFriendlyName(options.PackageId, options.PackageVersion, options.PackageInstance);
 			var domainConfigurationFile = GetDomainConfigurationFile(options.PackageConfig);
 			var domainApplicationBase = GetDomainApplicationBase(options.PackageDirectory);
-			var currentApplicationBase = AppDomain.CurrentDomain.BaseDirectory;
 
 			// Создание домена приложения
 			var domain = AppDomain.CreateDomain(domainFriendlyName, null, new AppDomainSetup
@@ -111,11 +110,13 @@ namespace Infinni.NodeWorker.ServiceHost
 				ShadowCopyFiles = AppDomain.CurrentDomain.SetupInformation.ShadowCopyFiles,
 				LoaderOptimization = LoaderOptimization.MultiDomainHost,
 				ConfigurationFile = domainConfigurationFile,
-				ApplicationBase = currentApplicationBase
+				ApplicationBase = domainApplicationBase
 			});
 
+			DomainAssemblyResolver.Setup(domain);
+
 			// Установка рабочего каталога
-			SetApplicationBase(domain, domainApplicationBase);
+			SetCurrentDirectory(domain, domainApplicationBase);
 
 			// Установка обработчика службы
 			SetWorkerServiceHost(domain, serviceHostContractName);
@@ -169,16 +170,16 @@ namespace Infinni.NodeWorker.ServiceHost
 		}
 
 
-		private static void SetApplicationBase(AppDomain domain, string domainApplicationBase)
+		private static void SetCurrentDirectory(AppDomain domain, string currentDirectory)
 		{
-			const string cApplicationBase = "ApplicationBase";
+			const string cCurrentDirectory = "CurrentDirectory";
 
-			SetDomainData(domain, cApplicationBase, domainApplicationBase);
+			SetDomainData(domain, cCurrentDirectory, currentDirectory);
 
 			domain.DoCallBack(() =>
 			{
-				var currentDirectory = GetDomainData<string>(AppDomain.CurrentDomain, cApplicationBase);
-				Directory.SetCurrentDirectory(currentDirectory);
+				var currentDirectoryValue = GetDomainData<string>(AppDomain.CurrentDomain, cCurrentDirectory);
+				Directory.SetCurrentDirectory(currentDirectoryValue);
 			});
 		}
 
@@ -221,6 +222,20 @@ namespace Infinni.NodeWorker.ServiceHost
 		private static string GetDomainDataKey(string name)
 		{
 			return string.Format("IWorkerServiceHost.{0}", name);
+		}
+
+
+		internal sealed class DomainAssemblyResolver
+		{
+			static DomainAssemblyResolver()
+			{
+				AppDomain.CurrentDomain.AssemblyResolve += (s, e) => typeof(DomainAssemblyResolver).Assembly;
+			}
+
+			public static void Setup(AppDomain domain)
+			{
+				domain.CreateInstanceFrom(typeof(DomainAssemblyResolver).Assembly.Location, typeof(DomainAssemblyResolver).FullName);
+			}
 		}
 	}
 }
