@@ -100,6 +100,7 @@ namespace Infinni.NodeWorker.ServiceHost
 		private static AppDomain CreateWorkerServiceDomain(WorkerServiceHostOptions options)
 		{
 			var serviceHostContractName = GetServiceHostContractName();
+			var serviceHostSearchPattern = GetServiceHostSearchPattern();
 			var domainFriendlyName = GetDomainFriendlyName(options.PackageId, options.PackageVersion, options.PackageInstance);
 			var domainConfigurationFile = GetDomainConfigurationFile(options.PackageConfig);
 			var domainApplicationBase = GetDomainApplicationBase(options.PackageDirectory);
@@ -119,7 +120,7 @@ namespace Infinni.NodeWorker.ServiceHost
 			SetCurrentDirectory(domain, domainApplicationBase);
 
 			// Установка обработчика службы
-			SetWorkerServiceHost(domain, serviceHostContractName);
+			SetWorkerServiceHost(domain, serviceHostContractName, serviceHostSearchPattern);
 
 			return domain;
 		}
@@ -147,6 +148,19 @@ namespace Infinni.NodeWorker.ServiceHost
 
 			return value.Trim();
 		}
+
+		private static string GetServiceHostSearchPattern()
+		{
+			var value = ConfigurationManager.AppSettings["WorkerServiceHostSearchPattern"];
+
+			if (string.IsNullOrWhiteSpace(value))
+			{
+				value = "*.dll";
+			}
+
+			return value.Trim();
+		}
+
 
 		private static string GetDomainFriendlyName(string packageId, string packageVersion, string packageInstance)
 		{
@@ -184,16 +198,19 @@ namespace Infinni.NodeWorker.ServiceHost
 		}
 
 
-		private static void SetWorkerServiceHost(AppDomain domain, string serviceHostContractName)
+		private static void SetWorkerServiceHost(AppDomain domain, string serviceHostContractName, string serviceHostSearchPattern)
 		{
 			const string cServiceHostContractName = "ServiceHostContractName";
+			const string cServiceHostSearchPattern = "ServiceHostSearchPattern";
 
 			SetDomainData(domain, cServiceHostContractName, serviceHostContractName);
+			SetDomainData(domain, cServiceHostSearchPattern, serviceHostSearchPattern);
 
 			domain.DoCallBack(() =>
 			{
 				var contractName = GetDomainData<string>(AppDomain.CurrentDomain, cServiceHostContractName);
-				var worker = new Lazy<IWorkerServiceHost>(() => new WorkerServiceHostImplementation(contractName));
+				var searchPattern = GetDomainData<string>(AppDomain.CurrentDomain, cServiceHostSearchPattern);
+				var worker = new Lazy<IWorkerServiceHost>(() => new WorkerServiceHostImplementation(contractName, searchPattern));
 				SetDomainData(AppDomain.CurrentDomain, "Instance", worker);
 			});
 		}

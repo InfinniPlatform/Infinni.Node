@@ -6,15 +6,20 @@ namespace Infinni.NodeWorker.ServiceHost
 {
 	internal sealed class WorkerServiceHostImplementation : IWorkerServiceHost
 	{
-		public WorkerServiceHostImplementation(string serviceHostContractName)
+		public WorkerServiceHostImplementation(string serviceHostContractName, string serviceHostSearchPattern)
 		{
-			if (string.IsNullOrEmpty(serviceHostContractName))
+			if (string.IsNullOrWhiteSpace(serviceHostContractName))
 			{
 				throw new ArgumentNullException("serviceHostContractName");
 			}
 
+			if (string.IsNullOrWhiteSpace(serviceHostSearchPattern))
+			{
+				serviceHostSearchPattern = "*.dll";
+			}
+
 			var directory = Directory.GetCurrentDirectory();
-			var directoryCatalog = new DirectoryCatalog(directory);
+			var directoryCatalog = new DirectoryCatalog(directory, serviceHostSearchPattern);
 			var compositionContainer = new CompositionContainer(directoryCatalog);
 
 			_host = compositionContainer.GetExport<dynamic>(serviceHostContractName);
