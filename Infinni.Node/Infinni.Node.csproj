@@ -68,6 +68,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\.common\VersionInfo.cs">
+      <Link>Properties\VersionInfo.cs</Link>
+    </Compile>
     <Compile Include="CommandHandlers\CommandHandlerHelpers.cs" />
     <Compile Include="CommandHandlers\InstallCommandHandler.cs" />
     <Compile Include="CommandHandlers\StopCommandHandler.cs" />

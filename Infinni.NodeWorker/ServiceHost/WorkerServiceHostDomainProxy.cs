@@ -102,16 +102,16 @@ namespace Infinni.NodeWorker.ServiceHost
 			var serviceHostContractName = GetServiceHostContractName();
 			var serviceHostSearchPattern = GetServiceHostSearchPattern();
 			var domainFriendlyName = GetDomainFriendlyName(options.PackageId, options.PackageVersion, options.PackageInstance);
-			var domainConfigurationFile = GetDomainConfigurationFile(options.PackageConfig);
 			var domainApplicationBase = GetDomainApplicationBase(options.PackageDirectory);
+			var domainConfigurationFile = GetDomainConfigurationFile(options, domainApplicationBase);
 
 			// Создание домена приложения
 			var domain = AppDomain.CreateDomain(domainFriendlyName, null, new AppDomainSetup
 			{
 				ShadowCopyFiles = AppDomain.CurrentDomain.SetupInformation.ShadowCopyFiles,
 				LoaderOptimization = LoaderOptimization.MultiDomainHost,
-				ConfigurationFile = domainConfigurationFile,
-				ApplicationBase = domainApplicationBase
+				ApplicationBase = domainApplicationBase,
+				ConfigurationFile = domainConfigurationFile
 			});
 
 			DomainAssemblyResolver.Setup(domain);
@@ -169,11 +169,30 @@ namespace Infinni.NodeWorker.ServiceHost
 				: string.Format("{0}.{1}${2}", packageId, packageVersion, packageInstance);
 		}
 
-		private static string GetDomainConfigurationFile(string packageConfig)
+		private static string GetDomainConfigurationFile(WorkerServiceHostOptions options, string domainApplicationBase)
 		{
-			return string.IsNullOrWhiteSpace(packageConfig)
-				? AppDomain.CurrentDomain.SetupInformation.ConfigurationFile
-				: packageConfig;
+			var packageConfig = options.PackageConfig;
+
+			// Если файл конфигурации не задан
+			if (string.IsNullOrWhiteSpace(packageConfig))
+			{
+				// Осуществляются попытки найти его автоматически (имя пакета + .config)
+
+				packageConfig = Path.Combine(domainApplicationBase, string.Format(@"{0}.config", options.PackageId));
+
+				if (!File.Exists(packageConfig))
+				{
+					packageConfig = Path.Combine(domainApplicationBase, string.Format(@"{0}.{1}.config", options.PackageId, options.PackageVersion));
+
+					if (!File.Exists(packageConfig))
+					{
+						// Если файл конфигурации не найден, берется конфигурации родительского процесса
+						packageConfig = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
+					}
+				}
+			}
+
+			return packageConfig;
 		}
 
 		private static string GetDomainApplicationBase(string packageDirectory)
