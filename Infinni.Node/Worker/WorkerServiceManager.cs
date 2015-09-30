@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,28 +19,24 @@ namespace Infinni.Node.Worker
 
 		public Task Install(WorkerServiceOptions options)
 		{
-			var arguments = BuildServiceCommand(WorkerServiceInstallVerb, options);
-			return MonoHelper.ExecuteProcess(WorkerServiceFile, arguments);
+			return ExecuteWorkerService(WorkerServiceInstallVerb, options);
 		}
 
 		public Task Uninstall(WorkerServiceOptions options)
 		{
-			var arguments = BuildServiceCommand(WorkerServiceUninstallVerb, options);
-			return MonoHelper.ExecuteProcess(WorkerServiceFile, arguments);
+			return ExecuteWorkerService(WorkerServiceUninstallVerb, options);
 		}
 
 		public Task Start(WorkerServiceOptions options)
 		{
-			var arguments = BuildServiceCommand(WorkerServiceStartVerb, options);
-			return MonoHelper.ExecuteProcess(WorkerServiceFile, arguments);
+			return ExecuteWorkerService(WorkerServiceStartVerb, options);
 		}
 
 		public Task Stop(WorkerServiceOptions options)
 		{
 			if (options.PackageTimeout == null)
 			{
-				var arguments = BuildServiceCommand(WorkerServiceStopVerb, options);
-				return MonoHelper.ExecuteProcess(WorkerServiceFile, arguments);
+				return ExecuteWorkerService(WorkerServiceStopVerb, options);
 			}
 
 			return Task.Run(() =>
@@ -54,6 +51,13 @@ namespace Infinni.Node.Worker
 			return InvokeService(options, c => c.GetStatus());
 		}
 
+
+		private static Task ExecuteWorkerService(string commandVerb, WorkerServiceOptions options)
+		{
+			var workerServiceFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, WorkerServiceFile);
+			var workerServiceArguments = BuildServiceCommand(commandVerb, options);
+			return MonoHelper.ExecuteProcess(workerServiceFile, workerServiceArguments);
+		}
 
 		private static string BuildServiceCommand(string commandVerb, WorkerServiceOptions options)
 		{
