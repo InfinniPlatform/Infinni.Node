@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Principal;
 
 using Infinni.Node.Packaging;
+using Infinni.Node.Properties;
 
 namespace Infinni.Node.CommandHandlers
 {
@@ -27,6 +29,41 @@ namespace Infinni.Node.CommandHandlers
 			}
 
 			return installItems.ToArray();
+		}
+
+		public static void CheckAdministrativePrivileges()
+		{
+			if (!IsRunningAsRoot())
+			{
+				throw new InvalidOperationException(Resources.YouMustHaveAdministrativePrivilegesToRunThisCommand);
+			}
+		}
+
+		private static bool IsRunningAsRoot()
+		{
+			if (MonoHelper.RunningOnMono)
+			{
+				return MonoHelper.RunningAsRoot;
+			}
+
+			try
+			{
+				// Этот код также работает под Linux, но есть сомнения, что под любой платформой
+
+				var user = WindowsIdentity.GetCurrent();
+
+				if (user != null)
+				{
+					var principal = new WindowsPrincipal(user);
+
+					return principal.IsInRole(WindowsBuiltInRole.Administrator);
+				}
+			}
+			catch (Exception)
+			{
+			}
+
+			return false;
 		}
 	}
 }

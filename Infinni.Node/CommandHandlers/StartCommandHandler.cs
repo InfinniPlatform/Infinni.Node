@@ -13,6 +13,8 @@ namespace Infinni.Node.CommandHandlers
 	{
 		public void Handle(CommandContext context, StartCommandOptions options)
 		{
+			CommandHandlerHelpers.CheckAdministrativePrivileges();
+
 			var installDirectory = context.GetInstallDirectory();
 			var workerService = context.GetWorkerService();
 

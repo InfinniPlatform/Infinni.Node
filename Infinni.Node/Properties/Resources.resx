@@ -198,4 +198,7 @@
   <data name="UninstallingWorkerServiceCompletedWithError" xml:space="preserve">
     <value>Uninstalling the service for the application '{0}' (instance '{1}') completed with errors: '{2}'.</value>
   </data>
+  <data name="YouMustHaveAdministrativePrivilegesToRunThisCommand" xml:space="preserve">
+    <value>You must have administrative privileges to run this command.</value>
+  </data>
 </root>

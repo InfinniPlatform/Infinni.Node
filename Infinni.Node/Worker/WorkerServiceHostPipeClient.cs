@@ -46,9 +46,10 @@ namespace Infinni.Node.Worker
 					? string.Format("{0}.{1}", packageId, packageVersion)
 					: string.Format("{0}.{1}${2}", packageId, packageVersion, packageInstance);
 
-			var channelTimeout = Math.Max(AppSettings.GetValue("NodeWorkerPipeTimeout", 5), 5);
+			var channelTimeout = Math.Max(AppSettings.GetValue("WorkerServiceHostPipeTimeout", 5), 5);
+			var channelDirectory = AppSettings.GetValue("WorkerServiceHostPipeDirectory");
 
-			return new FileChannelClient(channelName) { InvokeTimeout = TimeSpan.FromSeconds(channelTimeout) };
+			return new FileChannelClient(channelName, directory: channelDirectory) { InvokeTimeout = TimeSpan.FromSeconds(channelTimeout) };
 		}
 
 

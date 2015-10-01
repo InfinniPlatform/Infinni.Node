@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.IO;
 using System.Threading;
 
@@ -56,7 +57,9 @@ namespace Infinni.NodeWorker.ServiceHost
 					? string.Format("{0}.{1}", options.PackageId, options.PackageVersion)
 					: string.Format("{0}.{1}${2}", options.PackageId, options.PackageVersion, options.PackageInstance);
 
-				serviceChannel = new FileChannelServer(channelName)
+				var channelDirectory = GetChannelDirectory();
+
+				serviceChannel = new FileChannelServer(channelName, directory: channelDirectory)
 					.Subscribe("GetStatus", GetStatusHandler())
 					.Subscribe("Start", StartHandler())
 					.Subscribe("Stop", StopHandler());
@@ -122,6 +125,11 @@ namespace Infinni.NodeWorker.ServiceHost
 			{
 				OnStopServiceHost();
 			}
+		}
+
+		private static string GetChannelDirectory()
+		{
+			return ConfigurationManager.AppSettings["WorkerServiceHostPipeDirectory"];
 		}
 	}
 }

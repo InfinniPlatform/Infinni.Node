@@ -302,5 +302,14 @@ namespace Infinni.Node.Properties {
                 return ResourceManager.GetString("UninstallingWorkerServiceCompletedWithError", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must have administrative privileges to run this command..
+        /// </summary>
+        internal static string YouMustHaveAdministrativePrivilegesToRunThisCommand {
+            get {
+                return ResourceManager.GetString("YouMustHaveAdministrativePrivilegesToRunThisCommand", resourceCulture);
+            }
+        }
     }
 }
