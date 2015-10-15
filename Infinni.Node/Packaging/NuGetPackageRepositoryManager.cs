@@ -152,8 +152,6 @@ namespace Infinni.Node.Packaging
 		{
 			if (package != null && !dependencies.ContainsKey(package))
 			{
-				dependencies.Add(package, package);
-
 				// Список пакетов, от которых зависит текущий пакет
 				var packageDependencies = PackageExtensions.GetCompatiblePackageDependencies(package, targetFramework);
 
@@ -172,6 +170,8 @@ namespace Infinni.Node.Packaging
 						FillPackageDependencies(nativePackageManager, dependencyPackage, allowPrereleaseVersions, targetFramework, dependencies);
 					}
 				}
+
+				dependencies[package] = package;
 			}
 		}
 
