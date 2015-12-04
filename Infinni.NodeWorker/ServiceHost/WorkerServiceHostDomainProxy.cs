@@ -176,19 +176,13 @@ namespace Infinni.NodeWorker.ServiceHost
 			// Если файл конфигурации не задан
 			if (string.IsNullOrWhiteSpace(packageConfig))
 			{
-				// Осуществляются попытки найти его автоматически (имя пакета + .config)
-
-				packageConfig = Path.Combine(domainApplicationBase, string.Format(@"{0}.config", options.PackageId));
+				// Осуществляются попытки найти его автоматически
+				packageConfig = Path.Combine(domainApplicationBase, "App.config");
 
 				if (!File.Exists(packageConfig))
 				{
-					packageConfig = Path.Combine(domainApplicationBase, string.Format(@"{0}.{1}.config", options.PackageId, options.PackageVersion));
-
-					if (!File.Exists(packageConfig))
-					{
-						// Если файл конфигурации не найден, берется конфигурации родительского процесса
-						packageConfig = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
-					}
+					// Если файл конфигурации не найден, берется конфигурации родительского процесса
+					packageConfig = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
 				}
 			}
 
