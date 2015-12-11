@@ -108,7 +108,7 @@ namespace Infinni.NodeWorker.ServiceHost
 			// Создание домена приложения
 			var domain = AppDomain.CreateDomain(domainFriendlyName, null, new AppDomainSetup
 			{
-				ShadowCopyFiles = AppDomain.CurrentDomain.SetupInformation.ShadowCopyFiles,
+				//ShadowCopyFiles = AppDomain.CurrentDomain.SetupInformation.ShadowCopyFiles,
 				LoaderOptimization = LoaderOptimization.MultiDomainHost,
 				ApplicationBase = domainApplicationBase,
 				ConfigurationFile = domainConfigurationFile
