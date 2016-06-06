@@ -1,20 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infinni.Node", "Infinni.Node\Infinni.Node.csproj", "{A803FA45-610B-4A00-AB44-64AAB1676327}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infinni.NodeWorker", "Infinni.NodeWorker\Infinni.NodeWorker.csproj", "{A9F28DBD-2934-48EF-A799-D96C0F3AC2AE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{CFBFE01E-CA01-403F-A6F6-C961B12630F3}"
-	ProjectSection(SolutionItems) = preProject
-		.build\Build.bat = .build\Build.bat
-	EndProjectSection
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".files", ".files", "{5364FB7A-2AF3-443F-86F7-3E71FE0CF333}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".common", ".common", "{5101429E-B377-4CB2-BD98-A540CD5AB0A7}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packaging", "Packaging", "{4808C63E-94B1-4D10-ABA2-00089A4D924C}"
 	ProjectSection(SolutionItems) = preProject
-		.common\VersionInfo.cs = .common\VersionInfo.cs
+		.files\Packaging\BuildNupkg.bat = .files\Packaging\BuildNupkg.bat
+		.files\Packaging\BuildNupkg.ps1 = .files\Packaging\BuildNupkg.ps1
+		.files\Packaging\BuildSymbols.ps1 = .files\Packaging\BuildSymbols.ps1
+		.files\Packaging\CreateNuspec.ps1 = .files\Packaging\CreateNuspec.ps1
+		.files\Packaging\GlobalAssemblyInfo.cs = .files\Packaging\GlobalAssemblyInfo.cs
 	EndProjectSection
 EndProject
 Global
@@ -34,5 +35,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4808C63E-94B1-4D10-ABA2-00089A4D924C} = {5364FB7A-2AF3-443F-86F7-3E71FE0CF333}
 	EndGlobalSection
 EndGlobal
