@@ -66,28 +66,32 @@
 
 			# Add external dependencies
 
-			$projectPackages = $projectXml.Project.ItemGroup.Reference.HintPath | Where { $_ -like '..\packages\*.dll' }
-			$dependencies = $projectPackages | % { $_ -replace '\\[^\\]+\.dll', '' } | Sort-Object | Get-Unique -AsString
+			$packagesConfigPath = Join-Path $project.Directory.FullName 'packages.config'
 
-			if ($dependencies)
+			if (Test-Path $packagesConfigPath)
 			{
-				foreach ($item in $dependencies)
-				{
-					$result = $item -match '^\.\.\\packages\\(?<name>.*?)\.(?<version>([0-9]+\.[0-9\.]+)|([0-9]+\.[0-9\.]+\-.*?))\\lib($|(\\.*?))'
+				[xml] $packagesConfigXml = Get-Content $packagesConfigPath
 
-					$projectNuspec = $projectNuspec + "            <dependency id=""$($matches.name)"" version=""[$($matches.version)]"" />`r`n"
+				$packages = $packagesConfigXml.packages.package
+
+				if ($packages)
+				{
+					foreach ($package in $packages)
+					{
+						$projectNuspec = $projectNuspec + "            <dependency id=""$($package.id)"" version=""[$($package.version)]"" />`r`n"
+					}
 				}
 			}
 
 			# Add internal dependencies
 
-			$dependencies = $projectXml.Project.ItemGroup.ProjectReference.Name | Sort-Object | Get-Unique -AsString
+			$projectReferences = $projectXml.Project.ItemGroup.ProjectReference.Name | Sort-Object | Get-Unique -AsString
 
-			if ($dependencies)
+			if ($projectReferences)
 			{
-				foreach ($item in $dependencies)
+				foreach ($projectReference in $projectReferences)
 				{
-					$projectNuspec = $projectNuspec + "            <dependency id=""$item"" version=""[$version]"" />`r`n"
+					$projectNuspec = $projectNuspec + "            <dependency id=""$projectReference"" version=""[$version]"" />`r`n"
 				}
 			}
 
