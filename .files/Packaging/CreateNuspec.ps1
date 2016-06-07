@@ -46,6 +46,7 @@
 		{
 			[xml] $projectXml = Get-Content $project
 
+			$projectRefs = @()
 			$projectName = (Get-ChildItem $project).BaseName
 			$projectAssemblyName = ($projectXml.Project.PropertyGroup.AssemblyName[0])
 
@@ -83,6 +84,8 @@
 				}
 			}
 
+			$projectRefs += $projectXml.Project.ItemGroup.Reference.HintPath | Where { $_ -like '..\packages\*.dll' } | % { $_ -replace '^\.\.\\packages\\', '' }
+
 			# Add internal dependencies
 
 			$projectReferences = $projectXml.Project.ItemGroup.ProjectReference.Name | Sort-Object | Get-Unique -AsString
@@ -105,6 +108,7 @@
 			$projectIsLibrary = $projectXml.Project.PropertyGroup.OutputType -like '*Library*'
 			$projectAssembly = $projectAssemblyName + $(if ($projectIsLibrary) { '.dll' } else { '.exe' })
 			$projectNuspec = $projectNuspec + "        <file target=""lib\$framework\$projectAssembly"" src=""$projectAssembly"" />`r`n"
+			$projectRefs += "$projectName.$version\lib\$framework\$projectAssembly"
 
 			# Add resources for ru-RU (if exists)
 
@@ -113,6 +117,7 @@
 			if ($projectResourcesRu -and $projectResourcesRu.Count -gt 0 -and $projectResourcesRu[0])
 			{
 				$projectNuspec = $projectNuspec + "        <file target=""lib\$framework\ru-RU"" src=""ru-RU\$projectAssemblyName.resources.dll"" />`r`n"
+				$projectRefs += "$projectName.$version\lib\$framework\ru-RU\$projectAssemblyName.resources.dll"
 			}
 
 			# Add resources for en-US (if exists)
@@ -122,11 +127,13 @@
 			if ($projectResourcesEn -and $projectResourcesEn.Count -gt 0 -and $projectResourcesEn[0])
 			{
 				$projectNuspec = $projectNuspec + "        <file target=""lib\$framework\en-US"" src=""en-US\$projectAssemblyName.resources.dll"" />`r`n"
+				$projectRefs += "$projectName.$version\lib\$framework\en-US\$projectAssemblyName.resources.dll"
 			}
 
 			# Add symbol file
 
 			$projectNuspec = $projectNuspec + "        <file target=""lib\$framework"" src=""$projectAssemblyName.pdb"" />`r`n"
+			$projectRefs += "$projectName.$version\lib\$framework\$projectAssemblyName.pdb"
 
 			# Add XML-documentation (if exists)
 
@@ -142,6 +149,7 @@
 			if (-not $projectIsLibrary)
 			{
 				$projectNuspec = $projectNuspec + "        <file target=""lib\$framework"" src=""$projectAssemblyName.exe.config"" />`r`n"
+				$projectRefs += "$projectName.$version\lib\$framework\$projectAssemblyName.exe.config"
 			}
 
 			# Add log config-file (if applicable)
@@ -149,12 +157,24 @@
 			if (-not $projectIsLibrary)
 			{
 				$projectNuspec = $projectNuspec + "        <file target=""lib\$framework"" src=""$projectAssemblyName.Log.config"" />`r`n"
+				$projectRefs += "$projectName.$version\lib\$framework\$projectAssemblyName.Log.config"
+			}
+
+			# Add Install.ps1 (if exists)
+
+			$projectInstall = $projectXml.Project.ItemGroup.None.Include | Where { $_ -like 'Install.ps1' }
+
+			if ($projectInstall -and $projectInstall.Count -gt 0 -and $projectInstall[0])
+			{
+				$projectNuspec = $projectNuspec + "        <file target=""lib\$framework"" src=""Install.ps1"" />`r`n"
 			}
 
 			$projectNuspec = $projectNuspec + `
+				"        <file target=""lib\$framework\$projectName.references"" src=""$projectName.references"" />`r`n" + `
 				"    </files>`r`n" + `
 				"</package>"
 
+			Set-Content (Join-Path $outputDir "$projectName.references") -Value ($projectRefs | Sort-Object | Get-Unique -AsString)
 			Set-Content (Join-Path $outputDir ($projectName + '.nuspec')) -Value $projectNuspec
 		}
 	}
