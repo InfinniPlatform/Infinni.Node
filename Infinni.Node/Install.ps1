@@ -15,7 +15,7 @@ if (Test-Path $outputDir)
 	return
 }
 
-New-Item $outputDir -ItemType Directory -ErrorAction SilentlyContinue
+New-Item $outputDir -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
 
 # Find files to install
 $references = Get-ChildItem -Path $package.Parent.FullName -Filter '*.references' -Recurse
