@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace Infinni.Node.Packaging
 {
-	/// <summary>
+    /// <summary>
 	/// Содержимое пакета.
 	/// </summary>
+	[DebuggerDisplay("{Name}")]
 	internal sealed class PackageContent
 	{
 		public PackageContent(PackageName name, string path, IDictionary<string, PackageContentPart> parts)
