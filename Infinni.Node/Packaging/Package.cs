@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace Infinni.Node.Packaging
 {
-	/// <summary>
-	/// Информация о пакете.
-	/// </summary>
-	internal sealed class Package
+    /// <summary>
+    /// Информация о пакете.
+    /// </summary>
+    [DebuggerDisplay("{Name}")]
+    internal sealed class Package
 	{
 		public Package(PackageName name, string frameworkName, IList<PackageContent> contents)
 		{
