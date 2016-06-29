@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-
+using System.Linq;
 using Infinni.Node.Logging;
 using Infinni.Node.Properties;
+using Infinni.Node.Settings;
 
 namespace Infinni.Node.Packaging
 {
@@ -96,18 +97,25 @@ namespace Infinni.Node.Packaging
 					// Файлы остальных разделов копируются с сохранением структуры каталогов
 					else
 					{
-						foreach (var sourcePath in part.Files)
-						{
-							// Example: 'packages/SomePackage.1.2.3/content/path/to/file' -> 'path/to/file'
-							// Example: 'packages/SomePackage.1.2.3/content/net45/path/to/file' -> 'path/to/file'
-							var relativeDestinationPath = sourcePath.Substring(sourcePath.StartsWith(partFrameworkPath) ? partFrameworkPath.Length : partPath.Length);
+                        var copyPackageFolders = AppSettings.GetValues("CopyPackageFolders", "content");
 
-							// Example: 'install/SomeApp.4.5.6/content/SomePackage/path/to/file'
-							var destinationPath = Path.Combine(installPath, partName, content.Name.Id, relativeDestinationPath);
+                        if (copyPackageFolders.Contains(partName))
+                        {
+                            foreach (var sourcePath in part.Files)
+                            {
+                                // Example: 'packages/SomePackage.1.2.3/content/path/to/file' -> 'path/to/file'
+                                // Example: 'packages/SomePackage.1.2.3/content/net45/path/to/file' -> 'path/to/file'
+                                var relativeDestinationPath = sourcePath.Substring(sourcePath.StartsWith(partFrameworkPath)
+                                                                                       ? partFrameworkPath.Length
+                                                                                       : partPath.Length);
 
-							CopyFileWithOverwrite(sourcePath, destinationPath);
-						}
-					}
+                                // Example: 'install/SomeApp.4.5.6/content/SomePackage/path/to/file'
+                                var destinationPath = Path.Combine(installPath, partName, content.Name.Id, relativeDestinationPath);
+
+                                CopyFileWithOverwrite(sourcePath, destinationPath);
+                            }
+                        }
+                    }
 				}
 			}
 
