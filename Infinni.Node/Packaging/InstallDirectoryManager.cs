@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Infinni.Node.Logging;
 using Infinni.Node.Properties;
 using Infinni.Node.Settings;
@@ -25,9 +26,9 @@ namespace Infinni.Node.Packaging
 
 
 		private readonly string _rootInstallPath;
+	    private static readonly string[] CopyPackageFolders = AppSettings.GetValues("CopyPackageFolders", "content");
 
-
-		public string GetPath(PackageName packageName, string instance = null)
+	    public string GetPath(PackageName packageName, string instance = null)
 		{
 			if (packageName == null)
 			{
@@ -88,8 +89,13 @@ namespace Infinni.Node.Packaging
 							// Example: 'packages/SomePackage.1.2.3/lib/net45/path/to/file.dll' -> 'file.dll'
 							var relativeDestinationPath = Path.GetFileName(sourcePath) ?? "";
 
-							// Example: 'install/SomeApp.4.5.6/file.dll'
-							var destinationPath = Path.Combine(installPath, relativeDestinationPath);
+						    //Handle resource files
+						    var match = Regex.Match(sourcePath, @"[a-z]{2}-[A-Z]{2}");
+						    var groupCollection = match.Groups;
+
+						    var destinationPath = groupCollection.Count == 1
+						                              ? Path.Combine(installPath, groupCollection[0].Value, relativeDestinationPath)
+						                              : Path.Combine(installPath, relativeDestinationPath);
 
 							CopyFileWithOverwrite(sourcePath, destinationPath);
 						}
@@ -97,9 +103,7 @@ namespace Infinni.Node.Packaging
 					// Файлы остальных разделов копируются с сохранением структуры каталогов
 					else
 					{
-                        var copyPackageFolders = AppSettings.GetValues("CopyPackageFolders", "content");
-
-                        if (copyPackageFolders.Contains(partName))
+					    if (CopyPackageFolders.Contains(partName))
                         {
                             foreach (var sourcePath in part.Files)
                             {
@@ -135,7 +139,7 @@ namespace Infinni.Node.Packaging
 			}
 		}
 
-		private static void CopyFileWithOverwrite(string sourcePath, string destinationPath)
+	    private static void CopyFileWithOverwrite(string sourcePath, string destinationPath)
 		{
 			if (File.Exists(destinationPath))
 			{
