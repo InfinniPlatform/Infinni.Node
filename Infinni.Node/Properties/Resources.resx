@@ -117,20 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CanNotFindAnyApplicationsToStart" xml:space="preserve">
+  <data name="StartCommandHandler_CanNotFindAnyApplicationsToStart" xml:space="preserve">
     <value>Can not find any applications to start.</value>
   </data>
-  <data name="CanNotFindAnyApplicationsToUninstall" xml:space="preserve">
+  <data name="UninstallCommandHandler_CanNotFindAnyApplicationsToUninstall" xml:space="preserve">
     <value>Can not find any applications to uninstall.</value>
   </data>
-  <data name="CopyingPackageFiles" xml:space="preserve">
-    <value>Copying package files for the application '{0}' (instance '{1}').</value>
+  <data name="CantExecuteStage" xml:space="preserve">
+    <value>Cannot execute stage: '{0}'.</value>
   </data>
-  <data name="CopyingPackageFilesCompleted" xml:space="preserve">
-    <value>Copying package files for the application '{0}' (instance '{1}') completed successfully.</value>
-  </data>
-  <data name="CopyingPackageFilesCompletedWithError" xml:space="preserve">
-    <value>Copying package files for the application '{0}' (instance '{1}') completed with errors: '{2}'.</value>
+  <data name="CantRollbackStage" xml:space="preserve">
+    <value>Cannot rollback stage: '{0}'.</value>
   </data>
   <data name="DeletingPackageFiles" xml:space="preserve">
     <value>Deleting package files for the application '{0}' (instance '{1}').</value>
@@ -141,35 +138,68 @@
   <data name="DeletingPackageFilesCompletedWithError" xml:space="preserve">
     <value>Deleting package files for the application '{0}' (instance '{1}') completed with errors: '{2}'.</value>
   </data>
-  <data name="FileHasRewritten" xml:space="preserve">
-    <value>File '{0}' has rewritten. New source: '{1}'.</value>
+  <data name="ExecutingRollbackTransactionFailed" xml:space="preserve">
+    <value>Executing rollback transaction failed.</value>
   </data>
-  <data name="InstallingPackage" xml:space="preserve">
-    <value>Installing the application package '{0}' (instance '{1}').</value>
+  <data name="ExecutingStageIsCompletedWithErrors" xml:space="preserve">
+    <value>Executing stage '{0}' is completed with errors: '{1}'.</value>
   </data>
-  <data name="InstallingPackageCompleted" xml:space="preserve">
-    <value>Installing the application package '{0}' (instance '{1}') completed successfully.</value>
+  <data name="ExecutingStageIsStarted" xml:space="preserve">
+    <value>Executing stage '{0}' is started.</value>
   </data>
-  <data name="InstallingPackageCompletedWithError" xml:space="preserve">
-    <value>Installing the application package '{0}' (instance '{1}') completed with errors: '{2}'.</value>
+  <data name="ExecutingStageIsSuccessfullyCompleted" xml:space="preserve">
+    <value>Executing stage '{0}' is successfully completed.</value>
   </data>
-  <data name="InstallingWorkerService" xml:space="preserve">
-    <value>Installing the service for the application '{0}' (instance '{1}').</value>
+  <data name="ExecutingTransactionFailed" xml:space="preserve">
+    <value>Executing transaction failed.</value>
   </data>
-  <data name="InstallingWorkerServiceCompleted" xml:space="preserve">
-    <value>Installing the service for the application '{0}' (instance '{1}') completed successfully.</value>
+  <data name="FileWillBeOverwritten" xml:space="preserve">
+    <value>File '{0}' will be overwritten. New source: '{1}', previous source: {2}.</value>
   </data>
-  <data name="InstallingWorkerServiceCompletedWithError" xml:space="preserve">
-    <value>Installing the service for the application '{0}' (instance '{1}') completed with errors: '{2}'.</value>
+  <data name="InstallCommandHandler_AppAlreadyInstalled" xml:space="preserve">
+    <value>The application instance '{0}' already installed.</value>
   </data>
-  <data name="PackageAlreadyInstalled" xml:space="preserve">
-    <value>Application '{0}' (instance '{1}') already installed.</value>
+  <data name="InstallCommandHandler_AppPackageNotFound" xml:space="preserve">
+    <value>The application package '{0}' not found.</value>
+  </data>
+  <data name="InstallCommandHandler_CheckAppInstallation" xml:space="preserve">
+    <value>Ckeck existing installations</value>
+  </data>
+  <data name="InstallCommandHandler_CopyAppFiles" xml:space="preserve">
+    <value>Copy files of the application</value>
+  </data>
+  <data name="InstallCommandHandler_FindSdkDependency" xml:space="preserve">
+    <value>Find InfinniPlatform.Sdk dependency</value>
+  </data>
+  <data name="InstallCommandHandler_InstallAppPackage" xml:space="preserve">
+    <value>Install the application package</value>
+  </data>
+  <data name="InstallCommandHandler_InstallPlatformPackage" xml:space="preserve">
+    <value>Install InfinniPlatform package</value>
+  </data>
+  <data name="InstallCommandHandler_InstallAppService" xml:space="preserve">
+    <value>Install the service of the application</value>
+  </data>
+  <data name="InstallCommandHandler_PlatformPackageNotFound" xml:space="preserve">
+    <value>The platform package '{0}' not found.</value>
+  </data>
+  <data name="InstallCommandHandler_SdkDependencyNotFound" xml:space="preserve">
+    <value>The application package '{0}' does not contain dependency on InfinniPlatform.Sdk.</value>
   </data>
   <data name="PackageNotFound" xml:space="preserve">
-    <value>Package not found: Id='{0}', Version='{1}'.</value>
+    <value>Package '{0}' not found.</value>
   </data>
   <data name="RegisterServiceFileStage" xml:space="preserve">
     <value>Registering service file</value>
+  </data>
+  <data name="RollbackStageIsCompletedWithErrors" xml:space="preserve">
+    <value>Rollback stage '{0}' is completed with errors: '{1}'.</value>
+  </data>
+  <data name="RollbackStageIsStarted" xml:space="preserve">
+    <value>Rollback stage '{0}' is started.</value>
+  </data>
+  <data name="RollbackStageIsSuccessfullyCompleted" xml:space="preserve">
+    <value>Rollback stage '{0}' is successfully completed.</value>
   </data>
   <data name="StartingWorkerService" xml:space="preserve">
     <value>Starting the service for the application '{0}' (instance '{1}').</value>
@@ -189,16 +219,49 @@
   <data name="StoppingWorkerServiceCompletedWithError" xml:space="preserve">
     <value>Stopping the service for the application '{0}' (instance '{1}') completed with errors: '{2}'.</value>
   </data>
-  <data name="UninstallingWorkerService" xml:space="preserve">
-    <value>Uninstalling the service for the application '{0}' (instance '{1}').</value>
-  </data>
-  <data name="UninstallingWorkerServiceCompleted" xml:space="preserve">
-    <value>Uninstalling the service for the application '{0}' (instance '{1}') completed successfully.</value>
-  </data>
-  <data name="UninstallingWorkerServiceCompletedWithError" xml:space="preserve">
-    <value>Uninstalling the service for the application '{0}' (instance '{1}') completed with errors: '{2}'.</value>
-  </data>
   <data name="YouMustHaveAdministrativePrivilegesToRunThisCommand" xml:space="preserve">
     <value>You must have administrative privileges to run this command.</value>
+  </data>
+  <data name="UninstallCommandHandler_DeleteAppFiles" xml:space="preserve">
+    <value>Delete application files</value>
+  </data>
+  <data name="UninstallCommandHandler_FindAppInstallations" xml:space="preserve">
+    <value>Find existing installations</value>
+  </data>
+  <data name="UninstallCommandHandler_StartDeleteAppFiles" xml:space="preserve">
+    <value>Delete files of the application '{0}'.</value>
+  </data>
+  <data name="UninstallCommandHandler_StartUninstallAppService" xml:space="preserve">
+    <value>Uninstall the service of the application '{0}'.</value>
+  </data>
+  <data name="UninstallCommandHandler_UninstallAppServices" xml:space="preserve">
+    <value>Uninstall application services</value>
+  </data>
+  <data name="StartCommandHandler_FindAppInstallations" xml:space="preserve">
+    <value>Find existing installations</value>
+  </data>
+  <data name="StartCommandHandler_StartAppService" xml:space="preserve">
+    <value>Start the service of the application '{0}'.</value>
+  </data>
+  <data name="StartCommandHandler_StartAppServices" xml:space="preserve">
+    <value>Start application services</value>
+  </data>
+  <data name="StatusCommandHandler_CanNotFindAnyApplicationsToGetStatus" xml:space="preserve">
+    <value>Can not find any applications to get status.</value>
+  </data>
+  <data name="StatusCommandHandler_FindAppInstallations" xml:space="preserve">
+    <value>Find existing installations</value>
+  </data>
+  <data name="StatusCommandHandler_GetStatusAppServices" xml:space="preserve">
+    <value>Retrieve application statuses</value>
+  </data>
+  <data name="StopCommandHandler_CanNotFindAnyApplicationsToStop" xml:space="preserve">
+    <value>Can not find any applications to stop.</value>
+  </data>
+  <data name="StopCommandHandler_FindAppInstallations" xml:space="preserve">
+    <value>Find existing installations</value>
+  </data>
+  <data name="StopCommandHandler_StopAppServices" xml:space="preserve">
+    <value>Stop the service of the application '{0}'.</value>
   </data>
 </root>

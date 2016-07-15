@@ -1,90 +1,101 @@
 ﻿using System;
-using System.IO;
+using System.Threading.Tasks;
 
 using Infinni.Node.CommandOptions;
-using Infinni.Node.Logging;
 using Infinni.Node.Packaging;
 using Infinni.Node.Properties;
-using Infinni.Node.Worker;
+using Infinni.Node.Services;
+using Infinni.NodeWorker.Services;
+
+using log4net;
 
 namespace Infinni.Node.CommandHandlers
 {
-	internal sealed class UninstallCommandHandler
-	{
-		public void Handle(CommandContext context, UninstallCommandOptions options)
-		{
-			CommandHandlerHelpers.CheckAdministrativePrivileges();
+    public class UninstallCommandHandler : CommandHandlerBase<UninstallCommandOptions>
+    {
+        public UninstallCommandHandler(IInstallDirectoryManager installDirectory,
+                                       IAppServiceManager appService,
+                                       ILog log)
+        {
+            _installDirectory = installDirectory;
+            _appService = appService;
+            _log = log;
+        }
 
-			var installDirectory = context.GetInstallDirectory();
-			var workerService = context.GetWorkerService();
 
-			var installItems = installDirectory.GetItems(options.Id, options.Version, options.Instance);
+        private readonly IInstallDirectoryManager _installDirectory;
+        private readonly IAppServiceManager _appService;
+        private readonly ILog _log;
 
-			if (installItems.Length <= 0)
-			{
-				Log.Default.InfoFormat(Resources.CanNotFindAnyApplicationsToUninstall);
-			}
-			else
-			{
-				foreach (var installItem in installItems)
-				{
-					// Удаление сервиса рабочего процесса для приложения
-					if (UninstallWorkerService(installDirectory, workerService, installItem))
-					{
-						// Удаление файлов пакета приложения из каталога установки
-						DeletePackageFiles(installDirectory, installItem);
-					}
-				}
-			}
-		}
 
-		private static bool UninstallWorkerService(IInstallDirectoryManager installDirectory, IWorkerServiceManager workerService, InstallDirectoryItem installItem)
-		{
-			Log.Default.InfoFormat(Resources.UninstallingWorkerService, installItem.PackageName, installItem.Instance);
+        public override async Task Handle(UninstallCommandOptions options)
+        {
+            CommandHandlerHelpers.CheckAdministrativePrivileges();
 
-			try
-			{
-				// Рабочий каталог приложения
-				var installDirectoryPath = installDirectory.GetPath(installItem.PackageName, installItem.Instance);
-				var packageDirectory = Path.GetFullPath(installDirectoryPath);
+            var commandContext = new UninstallCommandContext
+            {
+                CommandOptions = options
+            };
 
-				var serviceOptions = new WorkerServiceOptions
-				{
-					PackageId = installItem.PackageName.Id,
-					PackageVersion = installItem.PackageName.Version,
-					PackageInstance = installItem.Instance,
-					PackageDirectory = packageDirectory
-				};
+            var commandTransaction = new CommandTransactionManager<UninstallCommandContext>(_log)
+                .Stage(Resources.UninstallCommandHandler_FindAppInstallations, FindAppInstallations)
+                .Stage(Resources.UninstallCommandHandler_UninstallAppServices, UninstallAppServices)
+                .Stage(Resources.UninstallCommandHandler_DeleteAppFiles, DeleteAppFiles)
+                ;
 
-				// Удаление рабочего процесса приложения
-				workerService.Uninstall(serviceOptions).Wait();
+            await commandTransaction.Execute(commandContext);
+        }
 
-				Log.Default.InfoFormat(Resources.UninstallingWorkerServiceCompleted, installItem.PackageName, installItem.Instance);
 
-				return true;
-			}
-			catch (Exception error)
-			{
-				Log.Default.ErrorFormat(Resources.UninstallingWorkerServiceCompletedWithError, installItem.PackageName, installItem.Instance, error);
+        private Task FindAppInstallations(UninstallCommandContext context)
+        {
+            context.AppInstallations = _installDirectory.GetItems(context.CommandOptions.Id, context.CommandOptions.Version, context.CommandOptions.Instance);
 
-				return false;
-			}
-		}
+            if (context.AppInstallations == null || context.AppInstallations.Length <= 0)
+            {
+                throw new InvalidOperationException(Resources.UninstallCommandHandler_CanNotFindAnyApplicationsToUninstall);
+            }
 
-		private static void DeletePackageFiles(IInstallDirectoryManager installDirectory, InstallDirectoryItem installItem)
-		{
-			Log.Default.InfoFormat(Resources.DeletingPackageFiles, installItem.PackageName, installItem.Instance);
+            return AsyncHelper.EmptyTask;
+        }
 
-			try
-			{
-				installDirectory.Delete(installItem.PackageName, installItem.Instance);
+        private async Task UninstallAppServices(UninstallCommandContext context)
+        {
+            foreach (var appInstallation in context.AppInstallations)
+            {
+                _log.InfoFormat(Resources.UninstallCommandHandler_StartUninstallAppService, appInstallation);
 
-				Log.Default.InfoFormat(Resources.DeletingPackageFilesCompleted, installItem.PackageName, installItem.Instance);
-			}
-			catch (Exception error)
-			{
-				Log.Default.ErrorFormat(Resources.DeletingPackageFilesCompletedWithError, installItem.PackageName, installItem.Instance, error);
-			}
-		}
-	}
+                var serviceOptions = new AppServiceOptions
+                {
+                    PackageId = appInstallation.PackageId,
+                    PackageVersion = appInstallation.PackageVersion,
+                    PackageInstance = appInstallation.Instance,
+                    PackageDirectory = appInstallation.Directory.FullName
+                };
+
+                // Удаление службы приложения
+                await _appService.Uninstall(serviceOptions);
+            }
+        }
+
+        private Task DeleteAppFiles(UninstallCommandContext context)
+        {
+            foreach (var appInstallation in context.AppInstallations)
+            {
+                _log.InfoFormat(Resources.UninstallCommandHandler_StartDeleteAppFiles, appInstallation);
+
+                _installDirectory.Delete(appInstallation);
+            }
+
+            return AsyncHelper.EmptyTask;
+        }
+
+
+        class UninstallCommandContext
+        {
+            public UninstallCommandOptions CommandOptions;
+
+            public InstallDirectoryItem[] AppInstallations;
+        }
+    }
 }

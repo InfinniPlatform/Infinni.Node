@@ -2,281 +2,288 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.Versioning;
+using System.Threading;
+using System.Threading.Tasks;
 
-using NuGet;
+using NuGet.Configuration;
+using NuGet.Frameworks;
+using NuGet.Logging;
+using NuGet.PackageManagement;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3;
+using NuGet.Resolver;
+using NuGet.Versioning;
 
-using Infinni.Node.Properties;
+using Resources = Infinni.Node.Properties.Resources;
 
 namespace Infinni.Node.Packaging
 {
     /// <summary>
-    /// Хранилище пакетов NuGet.
+    /// Менеджер для управления хранилищем NuGet-пакетов.
     /// </summary>
-    internal sealed class NuGetPackageRepositoryManager : IPackageRepositoryManager
+    public class NuGetPackageRepositoryManager : IPackageRepositoryManager
     {
-        /// <summary>
-        /// Статический конструктор.
-        /// </summary>
-	    static NuGetPackageRepositoryManager()
-        {
-            try
-            {
-                // TODO: Из-за ошибки установки пакетов с MinClientVersion=3.0, ошибка должна быть исправлена в NuGet, после чего этот код нужно удалить
-                var nuGetVersionField = (FieldInfo)((MemberExpression)((Expression<Func<Version>>)(() => Constants.NuGetVersion)).Body).Member;
-                nuGetVersionField.SetValue(null, new Version(4, 0, 0, 0));
-            }
-            catch
-            {
-            }
-        }
+        private static readonly NuGetFrameworkSorter NuGetFrameworkComparer = new NuGetFrameworkSorter();
+
 
         /// <summary>
         /// Конструктор.
         /// </summary>
-        /// <param name="localRepository">Путь к каталогу загруженных NuGet-пакетов.</param>
-        /// <param name="sourceRepositories">Список публичных источников NuGet-пакетов.</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public NuGetPackageRepositoryManager(string localRepository, IEnumerable<string> sourceRepositories)
+        /// <param name="packagesPath">Путь к каталогу установки пакетов.</param>
+        /// <param name="packageSources">Список источников пакетов.</param>
+        /// <param name="logger">Сервис логирования.</param>
+        public NuGetPackageRepositoryManager(string packagesPath, IEnumerable<string> packageSources, ILogger logger)
         {
-            if (string.IsNullOrWhiteSpace(localRepository))
-            {
-                throw new ArgumentNullException("localRepository");
-            }
-
-            if (sourceRepositories == null)
-            {
-                throw new ArgumentNullException("sourceRepositories");
-            }
-
-            _localRepository = localRepository;
-            _sourceRepositories = sourceRepositories;
+            _packagesPath = packagesPath;
+            _packageSources = packageSources;
+            _logger = logger;
         }
 
 
-        private readonly string _localRepository;
-        private readonly IEnumerable<string> _sourceRepositories;
+        private readonly string _packagesPath;
+        private readonly IEnumerable<string> _packageSources;
+        private readonly ILogger _logger;
 
 
-        private PackageManager _nativePackageManager;
-
-        private PackageManager GetNativePackageManager()
+        /// <summary>
+        /// Устанавливает пакет.
+        /// </summary>
+        /// <param name="packageId">ID пакета.</param>
+        /// <param name="packageVersion">Версия пакета.</param>
+        /// <param name="allowPrerelease">Разрешена ли установка предварительного релиза.</param>
+        /// <returns>Содержимое установленного пакета.</returns>
+        public async Task<PackageContent> InstallPackage(string packageId, string packageVersion = null, bool allowPrerelease = false)
         {
-            if (_nativePackageManager == null)
-            {
-                var repositoryFactory = new PackageRepositoryFactory();
-                var sourceRepository = new AggregateRepository(repositoryFactory, _sourceRepositories, ignoreFailingRepositories: true);
-                var nativePackageManager = new PackageManager(sourceRepository, _localRepository) { Logger = NuGetLogger.Instance };
+            NuGetVersion packageNuGetVersion = null;
 
-                _nativePackageManager = nativePackageManager;
+            if (!string.IsNullOrWhiteSpace(packageVersion))
+            {
+                packageNuGetVersion = NuGetVersion.Parse(packageVersion);
             }
 
-            return _nativePackageManager;
-        }
+            // Конфигурационный файл NuGet.config по умолчанию
+            var settings = new NuGet.Configuration.Settings(_packagesPath, "NuGet.config");
 
+            // Фабрика источников пактов на основе конфигурационного файла
+            var packageSourceProvider = new PackageSourceProvider(settings);
 
-        public PackageName GetPackageName(string packageId, string packageVersion = null, bool allowPrereleaseVersions = false)
-        {
-            if (string.IsNullOrWhiteSpace(packageId))
+            // Добавление в фабрику источников пакетов дополнительных источников
+            packageSourceProvider.SavePackageSources(_packageSources.Select(i => new PackageSource(i)));
+
+            // Фабрика хранилищ пакетов на основе фабрики источников пакетов
+            var packageRepositoryProvider = new CachingSourceProvider(packageSourceProvider);
+
+            // Получение всех хранилищ пакетов на основе указанных источников
+            var packageRepositories = packageRepositoryProvider.GetRepositories().ToList();
+
+            // Определение возможности установки prerelease-версии пакетов
+            allowPrerelease = allowPrerelease || (packageNuGetVersion != null && packageNuGetVersion.IsPrerelease);
+
+            // Создание правил разрешения зависимостей при установке пакета
+            var resolutionContext = new ResolutionContext(
+                dependencyBehavior: DependencyBehavior.Lowest,
+                includePrelease: allowPrerelease,
+                includeUnlisted: true,
+                versionConstraints: VersionConstraints.None);
+
+            // Если версия пакета не указана, поиск последней версии
+            if (packageNuGetVersion == null)
             {
-                throw new ArgumentNullException("packageId");
-            }
+                packageNuGetVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                    packageId,
+                    NuGetFramework.AnyFramework,
+                    resolutionContext,
+                    packageRepositories,
+                    _logger,
+                    CancellationToken.None);
 
-            var nativePackageManager = GetNativePackageManager();
-
-            // Шаг 1: Поиск устанавливаемого пакета в источнике
-            var package = FindPackage(nativePackageManager, packageId, packageVersion, allowPrereleaseVersions);
-
-            if (package == null)
-            {
-                throw new ArgumentException(string.Format(Resources.PackageNotFound, packageId, packageVersion));
-            }
-
-            return CreatePackageName(package);
-        }
-
-        public Package InstallPackage(string packageId, string packageVersion = null, bool ignoreDependencies = false, bool allowPrereleaseVersions = false)
-        {
-            if (string.IsNullOrWhiteSpace(packageId))
-            {
-                throw new ArgumentNullException("packageId");
-            }
-
-            var nativePackageManager = GetNativePackageManager();
-
-            // Шаг 1: Поиск устанавливаемого пакета в источнике
-            var package = FindPackage(nativePackageManager, packageId, packageVersion, allowPrereleaseVersions);
-
-            if (package == null)
-            {
-                throw new ArgumentException(string.Format(Resources.PackageNotFound, packageId, packageVersion));
-            }
-
-            // Шаг 2: Загрузка и установка пакета в локальное хранилище
-            nativePackageManager.InstallPackage(package, ignoreDependencies, allowPrereleaseVersions);
-
-            // Шаг 3: Определение версии фреймворка для поиска зависимостей
-            var targetFramework = GetTargetFramework(package);
-            var targetFrameworkPath = (targetFramework != null) ? VersionUtility.GetShortFrameworkName(targetFramework) : null;
-
-            // Шаг 4: Определение всех пакетов, от которых зависит устанавливаемый
-            var packageDependencies = ignoreDependencies ? new[] { package } : FindPackageDependencies(nativePackageManager, package, allowPrereleaseVersions, targetFramework);
-
-            // Шаг 5: Выбор из найденных пакетов файлов, совместимых с версией фреймворка
-            var packageContents = packageDependencies.Select(p => CreatePackageContent(nativePackageManager, targetFramework, p)).ToArray();
-
-            // Шаг 6: Формирование информации об установленном пакете
-            var packageInfo = new Package(CreatePackageName(package), targetFrameworkPath, packageContents);
-
-            return packageInfo;
-        }
-
-        public void UninstallPackage(string packageId, string packageVersion = null, bool removeDependencies = false)
-        {
-            if (string.IsNullOrWhiteSpace(packageId))
-            {
-                throw new ArgumentNullException("packageId");
-            }
-
-            var nativePackageManager = GetNativePackageManager();
-
-            var packageSemanticVersion = ParsePackageVersion(packageVersion);
-
-            // Шаг 1: Удаление пакета из локального хранилища
-            nativePackageManager.UninstallPackage(packageId, packageSemanticVersion, false, removeDependencies);
-        }
-
-
-        private static IPackage FindPackage(PackageManager nativePackageManager, string packageId, string packageVersion, bool allowPrereleaseVersions)
-        {
-            var packageSemanticVersion = ParsePackageVersion(packageVersion);
-
-            // Сначала делается попытка поиска пакета локальном хранилище
-
-            return PackageRepositoryExtensions.FindPackage(nativePackageManager.LocalRepository, packageId, packageSemanticVersion, allowPrereleaseVersions, allowUnlisted: true)
-                   ?? PackageRepositoryExtensions.FindPackage(nativePackageManager.SourceRepository, packageId, packageSemanticVersion, allowPrereleaseVersions, allowUnlisted: true);
-        }
-
-        private static IEnumerable<IPackage> FindPackageDependencies(PackageManager nativePackageManager, IPackage package, bool allowPrereleaseVersions, FrameworkName targetFramework)
-        {
-            var packageDependencies = new Dictionary<IPackage, IPackage>(PackageEqualityComparer.IdAndVersion);
-            FillPackageDependencies(nativePackageManager, package, allowPrereleaseVersions, targetFramework, packageDependencies);
-            return packageDependencies.Keys;
-        }
-
-        private static void FillPackageDependencies(PackageManager nativePackageManager, IPackage package, bool allowPrereleaseVersions, FrameworkName targetFramework, Dictionary<IPackage, IPackage> dependencies)
-        {
-            if (package != null && !dependencies.ContainsKey(package))
-            {
-                // Список пакетов, от которых зависит текущий пакет
-                var packageDependencies = PackageExtensions.GetCompatiblePackageDependencies(package, targetFramework);
-
-                if (packageDependencies != null)
+                if (packageNuGetVersion == null)
                 {
-                    var packageRepository = nativePackageManager.LocalRepository;
-                    var dependencyVersion = nativePackageManager.DependencyVersion;
-                    var constraintProvider = NullConstraintProvider.Instance;
-
-                    foreach (var packageDependency in packageDependencies)
-                    {
-                        // Поиск зависимости в локальном хранилище (делается предположение, что зависимость уже установлена)
-                        var dependencyPackage = PackageRepositoryExtensions.ResolveDependency(packageRepository, packageDependency, constraintProvider, allowPrereleaseVersions, false, dependencyVersion);
-
-                        // Рекурсивный вызов для найденной зависимости
-                        FillPackageDependencies(nativePackageManager, dependencyPackage, allowPrereleaseVersions, targetFramework, dependencies);
-                    }
-                }
-
-                dependencies[package] = package;
-            }
-        }
-
-        private static PackageContent CreatePackageContent(PackageManager nativePackageManager, FrameworkName targetFramework, IPackage package)
-        {
-            var files = new Dictionary<string, List<string>>();
-            var pathResolver = nativePackageManager.PathResolver;
-            var packagePath = pathResolver.GetInstallPath(package);
-
-            // Выбор из пакета файлов
-            var packageFiles = GetCompatibleFles(targetFramework, package);
-
-            if (packageFiles != null)
-            {
-                foreach (var file in packageFiles)
-                {
-                    // Определение раздела
-
-                    var partPrefix = string.Empty;
-                    var partPrefixIndex = file.Path.IndexOf(Path.DirectorySeparatorChar);
-
-                    if (partPrefixIndex >= 0)
-                    {
-                        partPrefix = file.Path.Substring(0, partPrefixIndex);
-                    }
-
-                    List<string> partFiles;
-
-                    if (!files.TryGetValue(partPrefix, out partFiles))
-                    {
-                        partFiles = new List<string>();
-                        files.Add(partPrefix, partFiles);
-                    }
-
-                    // Добавление файла в раздел
-
-                    var filePath = Path.Combine(packagePath, file.Path);
-                    partFiles.Add(filePath);
+                    throw new InvalidOperationException(string.Format(Resources.PackageNotFound, packageId));
                 }
             }
 
-            var packageParts = files.ToDictionary(i => i.Key, i => new PackageContentPart(Path.Combine(packagePath, i.Key), i.Value));
+            // Уникальный идентификатор версии пакета для установки
+            var packageIdentity = new PackageIdentity(packageId, packageNuGetVersion);
 
-            return new PackageContent(CreatePackageName(package), packagePath, packageParts);
+            // Каталог для установки пакетов (каталог packages)
+            NuGetProject folderProject = new FolderNuGetProject(_packagesPath);
+
+            // Менеджер для управления пакетами
+            var packageManager = new NuGetPackageManager(packageRepositoryProvider, settings, _packagesPath);
+
+            // Правила установки пакетов
+            var projectContext = new NuGetLoggerProjectContext(_logger)
+            {
+                PackageExtractionContext = new PackageExtractionContext
+                {
+                    PackageSaveMode = PackageSaveMode.Defaultv3
+                }
+            };
+
+            // Определение порядка действий при установке пакета
+            var installActions = (await packageManager.PreviewInstallPackageAsync(
+                folderProject,
+                packageIdentity,
+                resolutionContext,
+                projectContext,
+                packageRepositories,
+                Enumerable.Empty<SourceRepository>(),
+                CancellationToken.None)).ToList();
+
+            // Применение действий по установке пакета
+            await packageManager.ExecuteNuGetProjectActionsAsync(
+                folderProject,
+                installActions,
+                projectContext,
+                CancellationToken.None);
+
+            return GetPackageContent(packageIdentity, installActions.Select(i => i.PackageIdentity).ToList());
         }
 
-        private static IEnumerable<IPackageFile> GetCompatibleFles(FrameworkName targetFramework, IPackage package)
+
+        /// <summary>
+        /// Возвращает содержимое пакета.
+        /// </summary>
+        /// <param name="packageIdentity">Идентификатор пакета.</param>
+        /// <param name="packageDependencies">Список зависимостей пакета.</param>
+        private PackageContent GetPackageContent(PackageIdentity packageIdentity, List<PackageIdentity> packageDependencies)
         {
-            IEnumerable<IPackageFile> result = null;
+            var packageContent = new PackageContent(packageIdentity, packageDependencies);
 
-            var packageFiles = package.GetFiles();
+            var targetFramework = GetPackageLowestSupportedFramework(packageIdentity);
 
-            if (packageFiles != null)
+            if (packageDependencies != null)
             {
-                var arrayPackageFiles = packageFiles.ToArray();
-
-                // Файлы, совместимые с указанной версией фреймворка
-                if (!VersionUtility.TryGetCompatibleItems(targetFramework, arrayPackageFiles, out result))
+                foreach (var dependency in packageDependencies)
                 {
-                    result = null;
+                    FillPackageContent(packageContent, dependency, targetFramework, new DefaultCompatibilityProvider());
                 }
-
-                // Файлы, у которых не указана версия фреймворка
-                var anyFrameworkFiles = arrayPackageFiles.Where(i => i.SupportedFrameworks == null || i.SupportedFrameworks.IsEmpty());
-
-                result = ((result == null) ? anyFrameworkFiles : result.Union(anyFrameworkFiles)).ToArray();
             }
 
-            return result;
+            return packageContent;
         }
 
-        private static FrameworkName GetTargetFramework(IPackage package)
+        /// <summary>
+        /// Добавляет в содержимое пакета совместимые версии файлов из указанного пакета.
+        /// </summary>
+        /// <param name="packageContent">Содержимое пакета.</param>
+        /// <param name="packageIdentity">Идентификатор пакета.</param>
+        /// <param name="targetFramework">Версия совместимого фреймворка.</param>
+        /// <param name="compatibilityProvider">Провайдер для проверки совместимости фреймворков.</param>
+        private void FillPackageContent(PackageContent packageContent,
+                                        PackageIdentity packageIdentity,
+                                        NuGetFramework targetFramework,
+                                        IFrameworkCompatibilityProvider compatibilityProvider)
         {
-            var frameworks = package.GetSupportedFrameworks();
+            var packagePath = GetPackagePath(packageIdentity);
 
-            // Берется максимально поддерживаемая версия фреймворка (эту логику можно усовершенствовать)
-            return (frameworks != null) ? frameworks.LastOrDefault(i => string.IsNullOrWhiteSpace(i.Profile)) : null;
+            using (var reader = new PackageFolderReader(packagePath))
+            {
+                // Из пакета выбираются файлы с TargetFramework, который
+                // является наиболее новым и совместимым с указанным
+
+                var libItems = reader.GetLibItems()
+                                     .OrderByDescending(i => i.TargetFramework, NuGetFrameworkComparer)
+                                     .FirstOrDefault(i => NuGetFrameworkComparer.Compare(i.TargetFramework, targetFramework) <= 0
+                                                          && compatibilityProvider.IsCompatible(targetFramework, i.TargetFramework));
+
+                var contentItems = reader.GetContentItems()
+                                         .OrderByDescending(i => i.TargetFramework, NuGetFrameworkComparer)
+                                         .FirstOrDefault(i => NuGetFrameworkComparer.Compare(i.TargetFramework, targetFramework) <= 0
+                                                              && compatibilityProvider.IsCompatible(targetFramework, i.TargetFramework));
+
+                if (libItems?.Items != null)
+                {
+                    foreach (var item in libItems.Items)
+                    {
+                        var installItem = GetPackageItem(packagePath, item, PackagingConstants.Folders.Lib, libItems.TargetFramework);
+                        packageContent.Lib.Add(installItem);
+                    }
+                }
+
+                if (contentItems?.Items != null)
+                {
+                    foreach (var item in contentItems.Items)
+                    {
+                        var installItem = GetPackageItem(packagePath, item, PackagingConstants.Folders.Content, contentItems.TargetFramework);
+                        packageContent.Content.Add(installItem);
+                    }
+                }
+            }
         }
 
-        private static SemanticVersion ParsePackageVersion(string packageVersion)
+        /// <summary>
+        /// Возвращает информацию о файле пакета для указанного источника и фреймворка.
+        /// </summary>
+        /// <param name="packagePath">Путь к каталогу пакета.</param>
+        /// <param name="sourcePath">Путь к файлу в каталоге пакетов.</param>
+        /// <param name="sourcePart">Каталог файла пакета ('lib', 'content' и т.д.).</param>
+        /// <param name="sourceFramework">Версия фремворка файла пакета.</param>
+        private static PackageFile GetPackageItem(string packagePath,
+                                                  string sourcePath,
+                                                  string sourcePart,
+                                                  NuGetFramework sourceFramework)
         {
-            return string.IsNullOrWhiteSpace(packageVersion) ? null : new SemanticVersion(packageVersion);
+            // Путь файла в пакете обычно имеет вид 'lib/net45/some.dll'
+            // или 'lib/some.dll' для NuGetFramework.AnyFramework
+
+            sourcePath = sourcePath.Replace('/', Path.DirectorySeparatorChar);
+
+            var installPath = sourcePath;
+
+            // Определение части пути источника, которая указывает на NuGetFramework файла,
+            // например, 'lib/net45/' или 'lib/' для NuGetFramework.AnyFramework
+
+            var partFrameworkPath = sourcePart + Path.DirectorySeparatorChar;
+
+            if (!Equals(sourceFramework, NuGetFramework.AnyFramework))
+            {
+                partFrameworkPath += sourceFramework.GetShortFolderName() + Path.DirectorySeparatorChar;
+            }
+
+            // Определение относительного пути для установки файла, например, для источника
+            // 'lib/net45/some.dll' путь для установки будет 'some.dll', а для источника
+            // 'lib/net45/en-US/resources.dll' путь для установки будет 'en-US/resources.dll'
+
+            if (sourcePath.StartsWith(partFrameworkPath, StringComparison.OrdinalIgnoreCase))
+            {
+                installPath = sourcePath.Substring(partFrameworkPath.Length);
+            }
+
+            return new PackageFile(Path.Combine(packagePath, sourcePath), installPath);
         }
 
-        private static PackageName CreatePackageName(IPackage package)
+        /// <summary>
+        /// Возвращает наименьшую поддерживаемую версию фреймворка для указанного пакета.
+        /// </summary>
+        /// <param name="packageIdentity">Идентификатор пакета.</param>
+        private NuGetFramework GetPackageLowestSupportedFramework(PackageIdentity packageIdentity)
         {
-            return new PackageName(package.Id, package.Version.ToNormalizedString());
+            var packagePath = GetPackagePath(packageIdentity);
+
+            using (var reader = new PackageFolderReader(packagePath))
+            {
+                // Выбираются только поддерживаемые TargetFramework, содержащие файлы в каталоге 'lib'
+
+                return reader.GetLibItems()
+                             .OrderBy(i => i.TargetFramework, NuGetFrameworkComparer)
+                             .FirstOrDefault(i => !i.TargetFramework.IsUnsupported && i.Items != null && i.Items.Any())?.TargetFramework;
+            }
+        }
+
+        /// <summary>
+        /// Возвращает путь к каталогу указанного пакета.
+        /// </summary>
+        /// <param name="packageIdentity">Идентификатор пакета.</param>
+        private string GetPackagePath(PackageIdentity packageIdentity)
+        {
+            // Путь установленного пакета обычно имеет вид 'packages/MyPackage.1.0.0'
+
+            return Path.Combine(_packagesPath, $"{packageIdentity.Id}.{packageIdentity.Version}");
         }
     }
 }

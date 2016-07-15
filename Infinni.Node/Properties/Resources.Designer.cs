@@ -61,47 +61,20 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Can not find any applications to start..
+        ///   Looks up a localized string similar to Cannot execute stage: &apos;{0}&apos;..
         /// </summary>
-        internal static string CanNotFindAnyApplicationsToStart {
+        internal static string CantExecuteStage {
             get {
-                return ResourceManager.GetString("CanNotFindAnyApplicationsToStart", resourceCulture);
+                return ResourceManager.GetString("CantExecuteStage", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Can not find any applications to uninstall..
+        ///   Looks up a localized string similar to Cannot rollback stage: &apos;{0}&apos;..
         /// </summary>
-        internal static string CanNotFindAnyApplicationsToUninstall {
+        internal static string CantRollbackStage {
             get {
-                return ResourceManager.GetString("CanNotFindAnyApplicationsToUninstall", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Copying package files for the application &apos;{0}&apos; (instance &apos;{1}&apos;)..
-        /// </summary>
-        internal static string CopyingPackageFiles {
-            get {
-                return ResourceManager.GetString("CopyingPackageFiles", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Copying package files for the application &apos;{0}&apos; (instance &apos;{1}&apos;) completed successfully..
-        /// </summary>
-        internal static string CopyingPackageFilesCompleted {
-            get {
-                return ResourceManager.GetString("CopyingPackageFilesCompleted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Copying package files for the application &apos;{0}&apos; (instance &apos;{1}&apos;) completed with errors: &apos;{2}&apos;..
-        /// </summary>
-        internal static string CopyingPackageFilesCompletedWithError {
-            get {
-                return ResourceManager.GetString("CopyingPackageFilesCompletedWithError", resourceCulture);
+                return ResourceManager.GetString("CantRollbackStage", resourceCulture);
             }
         }
         
@@ -133,79 +106,151 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to File &apos;{0}&apos; has rewritten. New source: &apos;{1}&apos;..
+        ///   Looks up a localized string similar to Executing rollback transaction failed..
         /// </summary>
-        internal static string FileHasRewritten {
+        internal static string ExecutingRollbackTransactionFailed {
             get {
-                return ResourceManager.GetString("FileHasRewritten", resourceCulture);
+                return ResourceManager.GetString("ExecutingRollbackTransactionFailed", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing the application package &apos;{0}&apos; (instance &apos;{1}&apos;)..
+        ///   Looks up a localized string similar to Executing stage &apos;{0}&apos; is completed with errors: &apos;{1}&apos;..
         /// </summary>
-        internal static string InstallingPackage {
+        internal static string ExecutingStageIsCompletedWithErrors {
             get {
-                return ResourceManager.GetString("InstallingPackage", resourceCulture);
+                return ResourceManager.GetString("ExecutingStageIsCompletedWithErrors", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing the application package &apos;{0}&apos; (instance &apos;{1}&apos;) completed successfully..
+        ///   Looks up a localized string similar to Executing stage &apos;{0}&apos; is started..
         /// </summary>
-        internal static string InstallingPackageCompleted {
+        internal static string ExecutingStageIsStarted {
             get {
-                return ResourceManager.GetString("InstallingPackageCompleted", resourceCulture);
+                return ResourceManager.GetString("ExecutingStageIsStarted", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing the application package &apos;{0}&apos; (instance &apos;{1}&apos;) completed with errors: &apos;{2}&apos;..
+        ///   Looks up a localized string similar to Executing stage &apos;{0}&apos; is successfully completed..
         /// </summary>
-        internal static string InstallingPackageCompletedWithError {
+        internal static string ExecutingStageIsSuccessfullyCompleted {
             get {
-                return ResourceManager.GetString("InstallingPackageCompletedWithError", resourceCulture);
+                return ResourceManager.GetString("ExecutingStageIsSuccessfullyCompleted", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing the service for the application &apos;{0}&apos; (instance &apos;{1}&apos;)..
+        ///   Looks up a localized string similar to Executing transaction failed..
         /// </summary>
-        internal static string InstallingWorkerService {
+        internal static string ExecutingTransactionFailed {
             get {
-                return ResourceManager.GetString("InstallingWorkerService", resourceCulture);
+                return ResourceManager.GetString("ExecutingTransactionFailed", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing the service for the application &apos;{0}&apos; (instance &apos;{1}&apos;) completed successfully..
+        ///   Looks up a localized string similar to File &apos;{0}&apos; will be overwritten. New source: &apos;{1}&apos;, previous source: {2}..
         /// </summary>
-        internal static string InstallingWorkerServiceCompleted {
+        internal static string FileWillBeOverwritten {
             get {
-                return ResourceManager.GetString("InstallingWorkerServiceCompleted", resourceCulture);
+                return ResourceManager.GetString("FileWillBeOverwritten", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing the service for the application &apos;{0}&apos; (instance &apos;{1}&apos;) completed with errors: &apos;{2}&apos;..
+        ///   Looks up a localized string similar to The application instance &apos;{0}&apos; already installed..
         /// </summary>
-        internal static string InstallingWorkerServiceCompletedWithError {
+        internal static string InstallCommandHandler_AppAlreadyInstalled {
             get {
-                return ResourceManager.GetString("InstallingWorkerServiceCompletedWithError", resourceCulture);
+                return ResourceManager.GetString("InstallCommandHandler_AppAlreadyInstalled", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Application &apos;{0}&apos; (instance &apos;{1}&apos;) already installed..
+        ///   Looks up a localized string similar to The application package &apos;{0}&apos; not found..
         /// </summary>
-        internal static string PackageAlreadyInstalled {
+        internal static string InstallCommandHandler_AppPackageNotFound {
             get {
-                return ResourceManager.GetString("PackageAlreadyInstalled", resourceCulture);
+                return ResourceManager.GetString("InstallCommandHandler_AppPackageNotFound", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package not found: Id=&apos;{0}&apos;, Version=&apos;{1}&apos;..
+        ///   Looks up a localized string similar to Ckeck existing installations.
+        /// </summary>
+        internal static string InstallCommandHandler_CheckAppInstallation {
+            get {
+                return ResourceManager.GetString("InstallCommandHandler_CheckAppInstallation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy files of the application.
+        /// </summary>
+        internal static string InstallCommandHandler_CopyAppFiles {
+            get {
+                return ResourceManager.GetString("InstallCommandHandler_CopyAppFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Find InfinniPlatform.Sdk dependency.
+        /// </summary>
+        internal static string InstallCommandHandler_FindSdkDependency {
+            get {
+                return ResourceManager.GetString("InstallCommandHandler_FindSdkDependency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Install the application package.
+        /// </summary>
+        internal static string InstallCommandHandler_InstallAppPackage {
+            get {
+                return ResourceManager.GetString("InstallCommandHandler_InstallAppPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Install the service of the application.
+        /// </summary>
+        internal static string InstallCommandHandler_InstallAppService {
+            get {
+                return ResourceManager.GetString("InstallCommandHandler_InstallAppService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Install InfinniPlatform package.
+        /// </summary>
+        internal static string InstallCommandHandler_InstallPlatformPackage {
+            get {
+                return ResourceManager.GetString("InstallCommandHandler_InstallPlatformPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The platform package &apos;{0}&apos; not found..
+        /// </summary>
+        internal static string InstallCommandHandler_PlatformPackageNotFound {
+            get {
+                return ResourceManager.GetString("InstallCommandHandler_PlatformPackageNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The application package &apos;{0}&apos; does not contain dependency on InfinniPlatform.Sdk..
+        /// </summary>
+        internal static string InstallCommandHandler_SdkDependencyNotFound {
+            get {
+                return ResourceManager.GetString("InstallCommandHandler_SdkDependencyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; not found..
         /// </summary>
         internal static string PackageNotFound {
             get {
@@ -219,6 +264,69 @@ namespace Infinni.Node.Properties {
         internal static string RegisterServiceFileStage {
             get {
                 return ResourceManager.GetString("RegisterServiceFileStage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rollback stage &apos;{0}&apos; is completed with errors: &apos;{1}&apos;..
+        /// </summary>
+        internal static string RollbackStageIsCompletedWithErrors {
+            get {
+                return ResourceManager.GetString("RollbackStageIsCompletedWithErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rollback stage &apos;{0}&apos; is started..
+        /// </summary>
+        internal static string RollbackStageIsStarted {
+            get {
+                return ResourceManager.GetString("RollbackStageIsStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rollback stage &apos;{0}&apos; is successfully completed..
+        /// </summary>
+        internal static string RollbackStageIsSuccessfullyCompleted {
+            get {
+                return ResourceManager.GetString("RollbackStageIsSuccessfullyCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can not find any applications to start..
+        /// </summary>
+        internal static string StartCommandHandler_CanNotFindAnyApplicationsToStart {
+            get {
+                return ResourceManager.GetString("StartCommandHandler_CanNotFindAnyApplicationsToStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Find existing installations.
+        /// </summary>
+        internal static string StartCommandHandler_FindAppInstallations {
+            get {
+                return ResourceManager.GetString("StartCommandHandler_FindAppInstallations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start the service of the application &apos;{0}&apos;..
+        /// </summary>
+        internal static string StartCommandHandler_StartAppService {
+            get {
+                return ResourceManager.GetString("StartCommandHandler_StartAppService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start application services.
+        /// </summary>
+        internal static string StartCommandHandler_StartAppServices {
+            get {
+                return ResourceManager.GetString("StartCommandHandler_StartAppServices", resourceCulture);
             }
         }
         
@@ -250,6 +358,60 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Can not find any applications to get status..
+        /// </summary>
+        internal static string StatusCommandHandler_CanNotFindAnyApplicationsToGetStatus {
+            get {
+                return ResourceManager.GetString("StatusCommandHandler_CanNotFindAnyApplicationsToGetStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Find existing installations.
+        /// </summary>
+        internal static string StatusCommandHandler_FindAppInstallations {
+            get {
+                return ResourceManager.GetString("StatusCommandHandler_FindAppInstallations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Retrieve application statuses.
+        /// </summary>
+        internal static string StatusCommandHandler_GetStatusAppServices {
+            get {
+                return ResourceManager.GetString("StatusCommandHandler_GetStatusAppServices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can not find any applications to stop..
+        /// </summary>
+        internal static string StopCommandHandler_CanNotFindAnyApplicationsToStop {
+            get {
+                return ResourceManager.GetString("StopCommandHandler_CanNotFindAnyApplicationsToStop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Find existing installations.
+        /// </summary>
+        internal static string StopCommandHandler_FindAppInstallations {
+            get {
+                return ResourceManager.GetString("StopCommandHandler_FindAppInstallations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stop the service of the application &apos;{0}&apos;..
+        /// </summary>
+        internal static string StopCommandHandler_StopAppServices {
+            get {
+                return ResourceManager.GetString("StopCommandHandler_StopAppServices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Stopping the service for the application &apos;{0}&apos; (instance &apos;{1}&apos;)..
         /// </summary>
         internal static string StoppingWorkerService {
@@ -277,29 +439,56 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Uninstalling the service for the application &apos;{0}&apos; (instance &apos;{1}&apos;)..
+        ///   Looks up a localized string similar to Can not find any applications to uninstall..
         /// </summary>
-        internal static string UninstallingWorkerService {
+        internal static string UninstallCommandHandler_CanNotFindAnyApplicationsToUninstall {
             get {
-                return ResourceManager.GetString("UninstallingWorkerService", resourceCulture);
+                return ResourceManager.GetString("UninstallCommandHandler_CanNotFindAnyApplicationsToUninstall", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Uninstalling the service for the application &apos;{0}&apos; (instance &apos;{1}&apos;) completed successfully..
+        ///   Looks up a localized string similar to Delete application files.
         /// </summary>
-        internal static string UninstallingWorkerServiceCompleted {
+        internal static string UninstallCommandHandler_DeleteAppFiles {
             get {
-                return ResourceManager.GetString("UninstallingWorkerServiceCompleted", resourceCulture);
+                return ResourceManager.GetString("UninstallCommandHandler_DeleteAppFiles", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Uninstalling the service for the application &apos;{0}&apos; (instance &apos;{1}&apos;) completed with errors: &apos;{2}&apos;..
+        ///   Looks up a localized string similar to Find existing installations.
         /// </summary>
-        internal static string UninstallingWorkerServiceCompletedWithError {
+        internal static string UninstallCommandHandler_FindAppInstallations {
             get {
-                return ResourceManager.GetString("UninstallingWorkerServiceCompletedWithError", resourceCulture);
+                return ResourceManager.GetString("UninstallCommandHandler_FindAppInstallations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete files of the application &apos;{0}&apos;..
+        /// </summary>
+        internal static string UninstallCommandHandler_StartDeleteAppFiles {
+            get {
+                return ResourceManager.GetString("UninstallCommandHandler_StartDeleteAppFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall the service of the application &apos;{0}&apos;..
+        /// </summary>
+        internal static string UninstallCommandHandler_StartUninstallAppService {
+            get {
+                return ResourceManager.GetString("UninstallCommandHandler_StartUninstallAppService", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall application services.
+        /// </summary>
+        internal static string UninstallCommandHandler_UninstallAppServices {
+            get {
+                return ResourceManager.GetString("UninstallCommandHandler_UninstallAppServices", resourceCulture);
             }
         }
         

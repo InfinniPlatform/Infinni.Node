@@ -1,174 +1,139 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using Infinni.Node.Logging;
+
 using Infinni.Node.Properties;
-using Infinni.Node.Settings;
+using Infinni.NodeWorker.Services;
+using Infinni.NodeWorker.Settings;
+
+using log4net;
 
 namespace Infinni.Node.Packaging
 {
-	/// <summary>
-	/// Менеджер по работе с каталогом установки.
-	/// </summary>
-	internal sealed class InstallDirectoryManager : IInstallDirectoryManager
-	{
-		public InstallDirectoryManager(string rootInstallPath)
-		{
-			if (string.IsNullOrWhiteSpace(rootInstallPath))
-			{
-				throw new ArgumentNullException("rootInstallPath");
-			}
-
-			_rootInstallPath = rootInstallPath;
-		}
+    /// <summary>
+    /// Менеджер по работе с каталогом установки.
+    /// </summary>
+    public class InstallDirectoryManager : IInstallDirectoryManager
+    {
+        private const string DefaultInstallDirectory = "install";
 
 
-		private readonly string _rootInstallPath;
-	    private static readonly string[] CopyPackageFolders = AppSettings.GetValues("CopyPackageFolders", "content");
+        public InstallDirectoryManager(ILog log)
+        {
+            _rootInstallPath = AppSettings.GetValue("InstallDirectory", DefaultInstallDirectory);
+            _log = log;
+        }
 
-	    public string GetPath(PackageName packageName, string instance = null)
-		{
-			if (packageName == null)
-			{
-				throw new ArgumentNullException("packageName");
-			}
 
-			var installDir = new InstallDirectoryItem(packageName, instance);
+        private readonly string _rootInstallPath;
+        private readonly ILog _log;
 
-			return installDir.GetPath(_rootInstallPath);
-		}
 
-		public bool Exists(PackageName packageName, string instance = null)
-		{
-			var installPath = GetPath(packageName, instance);
+        public InstallDirectoryItem Create(string packageId, string packageVersion, string instance)
+        {
+            var appDirectoryName = CommonHelpers.GetAppName(packageId, packageVersion, instance);
+            var appDirectoryPath = Path.Combine(_rootInstallPath, appDirectoryName);
+            var appDirectory = new DirectoryInfo(appDirectoryPath);
 
-			return Directory.Exists(installPath);
-		}
+            return new InstallDirectoryItem(packageId, packageVersion, instance, appDirectory);
+        }
 
-		public void Create(PackageName packageName, string instance = null)
-		{
-			var installPath = GetPath(packageName, instance);
+        public void Delete(InstallDirectoryItem appInstallation)
+        {
+            if (appInstallation.Directory.Exists)
+            {
+                appInstallation.Directory.Delete(true);
+            }
+        }
 
-			Directory.CreateDirectory(installPath);
-		}
+        public void Install(InstallDirectoryItem appInstallation, IEnumerable<PackageContent> appPackages, params string[] appFiles)
+        {
+            if (!appInstallation.Directory.Exists)
+            {
+                appInstallation.Directory.Create();
+            }
 
-		public void Delete(PackageName packageName, string instance = null)
-		{
-			var installPath = GetPath(packageName, instance);
+            var installPath = appInstallation.Directory.FullName;
+            var installFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-			Directory.Delete(installPath, true);
-		}
+            foreach (var package in appPackages)
+            {
+                // Копирование файлов из каталога 'lib'
+                foreach (var libFile in package.Lib)
+                {
+                    var destinationPath = Path.Combine(installPath, libFile.InstallPath);
+                    CopyFileWithOverwrite(libFile.SourcePath, destinationPath, installFiles);
+                }
 
-		public void Install(Package package, string instance = null, params string[] files)
-		{
-			var installPath = GetPath(package.Name, instance);
+                // Копирование файлов из каталога 'content'
+                foreach (var contentFile in package.Content)
+                {
+                    var destinationPath = Path.Combine(installPath, contentFile.InstallPath);
+                    CopyFileWithOverwrite(contentFile.SourcePath, destinationPath, installFiles);
+                }
+            }
 
-			foreach (var content in package.Contents)
-			{
-				foreach (var contentPartItem in content.Parts)
-				{
-					var part = contentPartItem.Value;
-
-					// Example: lib, src, content
-					var partName = contentPartItem.Key;
-
-					// Example: packages/SomePackage.1.2.3/lib/
-					var partPath = part.Path.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-
-					// Example: packages/SomePackage.1.2.3/lib/net45/
-					var partFrameworkPath = Path.Combine(part.Path, package.FrameworkName ?? "").TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-
-					// Файлы из раздела 'lib' копируются в корень каталога установки
-					if (string.Equals(partName, "lib", StringComparison.OrdinalIgnoreCase))
-					{
-						foreach (var sourcePath in part.Files)
-						{
-							// Example: 'packages/SomePackage.1.2.3/lib/path/to/file.dll' -> 'file.dll'
-							// Example: 'packages/SomePackage.1.2.3/lib/net45/path/to/file.dll' -> 'file.dll'
-							var relativeDestinationPath = Path.GetFileName(sourcePath) ?? "";
-
-						    //Handle resource files
-						    var match = Regex.Match(sourcePath, @"[a-z]{2}-[A-Z]{2}");
-						    var groupCollection = match.Groups;
-
-						    var destinationPath = groupCollection.Count == 1
-						                              ? Path.Combine(installPath, groupCollection[0].Value, relativeDestinationPath)
-						                              : Path.Combine(installPath, relativeDestinationPath);
-
-							CopyFileWithOverwrite(sourcePath, destinationPath);
-						}
-					}
-					// Файлы остальных разделов копируются с сохранением структуры каталогов
-					else
-					{
-					    if (CopyPackageFolders.Contains(partName))
-                        {
-                            foreach (var sourcePath in part.Files)
-                            {
-                                // Example: 'packages/SomePackage.1.2.3/content/path/to/file' -> 'path/to/file'
-                                // Example: 'packages/SomePackage.1.2.3/content/net45/path/to/file' -> 'path/to/file'
-                                var relativeDestinationPath = sourcePath.Substring(sourcePath.StartsWith(partFrameworkPath)
-                                                                                       ? partFrameworkPath.Length
-                                                                                       : partPath.Length);
-
-                                // Example: 'install/SomeApp.4.5.6/content/SomePackage/path/to/file'
-                                var destinationPath = Path.Combine(installPath, partName, content.Name.Id, relativeDestinationPath);
-
-                                CopyFileWithOverwrite(sourcePath, destinationPath);
-                            }
-                        }
+            if (appFiles != null)
+            {
+                // Копирование дополнительных файлов в корень каталога установки
+                foreach (var file in appFiles)
+                {
+                    if (!string.IsNullOrWhiteSpace(file))
+                    {
+                        var destinationPath = Path.Combine(installPath, Path.GetFileName(file));
+                        CopyFileWithOverwrite(file, destinationPath, installFiles);
                     }
-				}
-			}
+                }
+            }
+        }
 
-			if (files != null)
-			{
-				// Дополнительные файлы копируются в корень каталога установки
-				foreach (var file in files)
-				{
-					if (!string.IsNullOrWhiteSpace(file))
-					{
-						var relativeDestinationPath = Path.GetFileName(file);
-						var destinationPath = Path.Combine(installPath, relativeDestinationPath);
+        private void CopyFileWithOverwrite(string sourcePath, string destinationPath, IDictionary<string, string> installFiles)
+        {
+            // Если файл уже был скопирован ранее
+            if (installFiles.ContainsKey(destinationPath))
+            {
+                // Определяется источник копирования
+                var previousSourcePath = installFiles[destinationPath];
 
-						CopyFileWithOverwrite(file, destinationPath);
-					}
-				}
-			}
-		}
+                // Если источник не изменился, копирование не производится
+                if (string.Equals(previousSourcePath, sourcePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
 
-	    private static void CopyFileWithOverwrite(string sourcePath, string destinationPath)
-		{
-			if (File.Exists(destinationPath))
-			{
-				Log.Default.WarnFormat(Resources.FileHasRewritten, destinationPath, sourcePath);
-			}
+                // Иначе выводится предупреждение о том, что файл будет переписан
+                _log.WarnFormat(Resources.FileWillBeOverwritten, destinationPath, sourcePath, previousSourcePath);
+            }
 
-			var destinationDir = Path.GetDirectoryName(destinationPath) ?? "";
+            // Добавление записи о факте копирования
+            installFiles[destinationPath] = sourcePath;
 
-			if (!Directory.Exists(destinationDir))
-			{
-				Directory.CreateDirectory(destinationDir);
-			}
+            var destinationDir = Path.GetDirectoryName(destinationPath) ?? "";
 
-			File.Copy(sourcePath, destinationPath, true);
-		}
+            // Копирование файла из источника
 
-		public IEnumerable<InstallDirectoryItem> GetItems()
-		{
-			var directories = Directory.EnumerateDirectories(_rootInstallPath);
+            if (!Directory.Exists(destinationDir))
+            {
+                Directory.CreateDirectory(destinationDir);
+            }
 
-			foreach (var path in directories)
-			{
-				var installDir = InstallDirectoryItem.Parse(path);
+            File.Copy(sourcePath, destinationPath, true);
+        }
 
-				if (installDir != null)
-				{
-					yield return installDir;
-				}
-			}
-		}
-	}
+
+        public IEnumerable<InstallDirectoryItem> GetItems()
+        {
+            var directories = Directory.EnumerateDirectories(_rootInstallPath);
+
+            foreach (var path in directories)
+            {
+                var installDir = InstallDirectoryItem.Parse(path);
+
+                if (installDir != null)
+                {
+                    yield return installDir;
+                }
+            }
+        }
+    }
 }

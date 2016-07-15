@@ -1,66 +1,88 @@
 ﻿using System;
-using System.IO;
+using System.Threading.Tasks;
 
 using Infinni.Node.CommandOptions;
-using Infinni.Node.Logging;
 using Infinni.Node.Packaging;
 using Infinni.Node.Properties;
-using Infinni.Node.Worker;
+using Infinni.Node.Services;
+using Infinni.NodeWorker.Services;
+
+using log4net;
 
 namespace Infinni.Node.CommandHandlers
 {
-	internal sealed class StartCommandHandler
-	{
-		public void Handle(CommandContext context, StartCommandOptions options)
-		{
-			CommandHandlerHelpers.CheckAdministrativePrivileges();
+    public class StartCommandHandler : CommandHandlerBase<StartCommandOptions>
+    {
+        public StartCommandHandler(IInstallDirectoryManager installDirectory,
+                                   IAppServiceManager appService,
+                                   ILog log)
+        {
+            _installDirectory = installDirectory;
+            _appService = appService;
+            _log = log;
+        }
 
-			var installDirectory = context.GetInstallDirectory();
-			var workerService = context.GetWorkerService();
 
-			var installItems = installDirectory.GetItems(options.Id, options.Version, options.Instance);
+        private readonly IInstallDirectoryManager _installDirectory;
+        private readonly IAppServiceManager _appService;
+        private readonly ILog _log;
 
-			if (installItems.Length <= 0)
-			{
-				Log.Default.InfoFormat(Resources.CanNotFindAnyApplicationsToStart);
-			}
-			else
-			{
-				foreach (var installItem in installItems)
-				{
-					// Запуск сервиса рабочего процесса для приложения
-					StartWorkerService(installDirectory, workerService, installItem);
-				}
-			}
-		}
 
-		private static void StartWorkerService(IInstallDirectoryManager installDirectory, IWorkerServiceManager workerService, InstallDirectoryItem installItem)
-		{
-			Log.Default.InfoFormat(Resources.StartingWorkerService, installItem.PackageName, installItem.Instance);
+        public override async Task Handle(StartCommandOptions options)
+        {
+            CommandHandlerHelpers.CheckAdministrativePrivileges();
 
-			try
-			{
-				// Рабочий каталог приложения
-				var installDirectoryPath = installDirectory.GetPath(installItem.PackageName, installItem.Instance);
-				var packageDirectory = Path.GetFullPath(installDirectoryPath);
+            var commandContext = new StartCommandContext
+            {
+                CommandOptions = options
+            };
 
-				var serviceOptions = new WorkerServiceOptions
-				{
-					PackageId = installItem.PackageName.Id,
-					PackageVersion = installItem.PackageName.Version,
-					PackageInstance = installItem.Instance,
-					PackageDirectory = packageDirectory
-				};
+            var commandTransaction = new CommandTransactionManager<StartCommandContext>(_log)
+                .Stage(Resources.StartCommandHandler_FindAppInstallations, FindAppInstallations)
+                .Stage(Resources.StartCommandHandler_StartAppServices, StartAppServices)
+                ;
 
-				// Запуск рабочего процесса приложения
-				workerService.Start(serviceOptions).Wait();
+            await commandTransaction.Execute(commandContext);
+        }
 
-				Log.Default.InfoFormat(Resources.StartingWorkerServiceCompleted, installItem.PackageName, installItem.Instance);
-			}
-			catch (Exception error)
-			{
-				Log.Default.ErrorFormat(Resources.StartingWorkerServiceCompletedWithError, installItem.PackageName, installItem.Instance, error);
-			}
-		}
-	}
+
+        private Task FindAppInstallations(StartCommandContext context)
+        {
+            context.AppInstallations = _installDirectory.GetItems(context.CommandOptions.Id, context.CommandOptions.Version, context.CommandOptions.Instance);
+
+            if (context.AppInstallations == null || context.AppInstallations.Length <= 0)
+            {
+                throw new InvalidOperationException(Resources.StartCommandHandler_CanNotFindAnyApplicationsToStart);
+            }
+
+            return AsyncHelper.EmptyTask;
+        }
+
+        private async Task StartAppServices(StartCommandContext context)
+        {
+            foreach (var appInstallation in context.AppInstallations)
+            {
+                _log.InfoFormat(Resources.StartCommandHandler_StartAppService, appInstallation);
+
+                var serviceOptions = new AppServiceOptions
+                {
+                    PackageId = appInstallation.PackageId,
+                    PackageVersion = appInstallation.PackageVersion,
+                    PackageInstance = appInstallation.Instance,
+                    PackageDirectory = appInstallation.Directory.FullName
+                };
+
+                // Запуск рабочего процесса приложения
+                await _appService.Start(serviceOptions);
+            }
+        }
+
+
+        class StartCommandContext
+        {
+            public StartCommandOptions CommandOptions;
+
+            public InstallDirectoryItem[] AppInstallations;
+        }
+    }
 }

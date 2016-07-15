@@ -1,33 +1,53 @@
-﻿using NuGet;
+﻿using log4net;
+
+using NuGet.Logging;
 
 namespace Infinni.Node.Packaging
 {
-	internal sealed class NuGetLogger : ILogger
-	{
-		public static readonly ILogger Instance = new NuGetLogger();
+    public class NuGetLogger : ILogger
+    {
+        public NuGetLogger(ILog log)
+        {
+            _log = log;
+        }
 
-		public FileConflictResolution ResolveFileConflict(string message)
-		{
-			return FileConflictResolution.Ignore;
-		}
 
-		public void Log(MessageLevel level, string message, params object[] args)
-		{
-			switch (level)
-			{
-				case MessageLevel.Debug:
-					Logging.Log.Default.DebugFormat(message, args);
-					break;
-				case MessageLevel.Info:
-					Logging.Log.Default.InfoFormat(message, args);
-					break;
-				case MessageLevel.Warning:
-					Logging.Log.Default.WarnFormat(message, args);
-					break;
-				case MessageLevel.Error:
-					Logging.Log.Default.ErrorFormat(message, args);
-					break;
-			}
-		}
-	}
+        private readonly ILog _log;
+
+
+        public void LogDebug(string data)
+        {
+            _log.Debug(data);
+        }
+
+        public void LogVerbose(string data)
+        {
+            _log.Debug(data);
+        }
+
+        public void LogInformation(string data)
+        {
+            _log.Info(data);
+        }
+
+        public void LogMinimal(string data)
+        {
+            _log.Info(data);
+        }
+
+        public void LogWarning(string data)
+        {
+            _log.Warn(data);
+        }
+
+        public void LogError(string data)
+        {
+            _log.Error(data);
+        }
+
+        public void LogSummary(string data)
+        {
+            _log.Info(data);
+        }
+    }
 }

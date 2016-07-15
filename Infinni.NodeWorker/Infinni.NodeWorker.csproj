@@ -81,11 +81,14 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="ServiceHost\IWorkerServiceHost.cs" />
-    <Compile Include="ServiceHost\WorkerServiceHostDomainProxy.cs" />
-    <Compile Include="ServiceHost\WorkerServiceHostImplementation.cs" />
-    <Compile Include="ServiceHost\WorkerServiceHostOptions.cs" />
-    <Compile Include="ServiceHost\WorkerServiceHostPipeServer.cs" />
+    <Compile Include="Services\AppServiceHostPipeClient.cs" />
+    <Compile Include="Services\CommonHelpers.cs" />
+    <Compile Include="Services\IAppServiceHost.cs" />
+    <Compile Include="Services\AppServiceHostDomainProxy.cs" />
+    <Compile Include="Services\AppServiceHostImplementation.cs" />
+    <Compile Include="Services\AppServiceOptions.cs" />
+    <Compile Include="Services\AppServiceHostPipeServer.cs" />
+    <Compile Include="Settings\AppSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

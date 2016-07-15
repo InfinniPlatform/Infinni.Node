@@ -1,85 +1,89 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
+using System.Threading.Tasks;
 
 using Infinni.Node.CommandOptions;
-using Infinni.Node.Logging;
 using Infinni.Node.Packaging;
 using Infinni.Node.Properties;
-using Infinni.Node.Worker;
+using Infinni.Node.Services;
+using Infinni.NodeWorker.Services;
+
+using log4net;
 
 namespace Infinni.Node.CommandHandlers
 {
-	internal sealed class StopCommandHandler
-	{
-		public void Handle(CommandContext context, StopCommandOptions options)
-		{
-			CommandHandlerHelpers.CheckAdministrativePrivileges();
+    public class StopCommandHandler : CommandHandlerBase<StopCommandOptions>
+    {
+        public StopCommandHandler(IInstallDirectoryManager installDirectory,
+                                  IAppServiceManager appService,
+                                  ILog log)
+        {
+            _installDirectory = installDirectory;
+            _appService = appService;
+            _log = log;
+        }
 
-			var installDirectory = context.GetInstallDirectory();
-			var workerService = context.GetWorkerService();
 
-			var installItems = installDirectory.GetItems();
+        private readonly IInstallDirectoryManager _installDirectory;
+        private readonly IAppServiceManager _appService;
+        private readonly ILog _log;
 
-			if (!string.IsNullOrWhiteSpace(options.Id))
-			{
-				installItems = installItems.Where(i => string.Equals(i.PackageName.Id, options.Id.Trim(), StringComparison.OrdinalIgnoreCase));
-			}
 
-			if (!string.IsNullOrWhiteSpace(options.Version))
-			{
-				installItems = installItems.Where(i => string.Equals(i.PackageName.Version, options.Version.Trim(), StringComparison.OrdinalIgnoreCase));
-			}
+        public override async Task Handle(StopCommandOptions options)
+        {
+            CommandHandlerHelpers.CheckAdministrativePrivileges();
 
-			if (!string.IsNullOrWhiteSpace(options.Instance))
-			{
-				installItems = installItems.Where(i => string.Equals(i.Instance, options.Instance.Trim(), StringComparison.OrdinalIgnoreCase));
-			}
+            var commandContext = new StopCommandContext
+            {
+                CommandOptions = options
+            };
 
-			var installItemsArray = installItems.ToArray();
+            var commandTransaction = new CommandTransactionManager<StopCommandContext>(_log)
+                .Stage(Resources.StopCommandHandler_FindAppInstallations, FindAppInstallations)
+                .Stage(Resources.StopCommandHandler_StopAppServices, StopAppServices)
+                ;
 
-			if (installItemsArray.Length <= 0)
-			{
-				Log.Default.InfoFormat(Resources.CanNotFindAnyApplicationsToStart);
-			}
-			else
-			{
-				foreach (var installItem in installItemsArray)
-				{
-					// Остановка сервиса рабочего процесса для приложения
-					StopWorkerService(installDirectory, workerService, installItem, options.Timeout);
-				}
-			}
-		}
+            await commandTransaction.Execute(commandContext);
+        }
 
-		private static void StopWorkerService(IInstallDirectoryManager installDirectory, IWorkerServiceManager workerService, InstallDirectoryItem installItem, int? timeout)
-		{
-			Log.Default.InfoFormat(Resources.StoppingWorkerService, installItem.PackageName, installItem.Instance);
 
-			try
-			{
-				// Рабочий каталог приложения
-				var installDirectoryPath = installDirectory.GetPath(installItem.PackageName, installItem.Instance);
-				var packageDirectory = Path.GetFullPath(installDirectoryPath);
+        private Task FindAppInstallations(StopCommandContext context)
+        {
+            context.AppInstallations = _installDirectory.GetItems(context.CommandOptions.Id, context.CommandOptions.Version, context.CommandOptions.Instance);
 
-				var serviceOptions = new WorkerServiceOptions
-				{
-					PackageId = installItem.PackageName.Id,
-					PackageVersion = installItem.PackageName.Version,
-					PackageInstance = installItem.Instance,
-					PackageDirectory = packageDirectory,
-					PackageTimeout = timeout
-				};
+            if (context.AppInstallations == null || context.AppInstallations.Length <= 0)
+            {
+                throw new InvalidOperationException(Resources.StopCommandHandler_CanNotFindAnyApplicationsToStop);
+            }
 
-				// Остановка рабочего процесса приложения
-				workerService.Stop(serviceOptions).Wait();
+            return AsyncHelper.EmptyTask;
+        }
 
-				Log.Default.InfoFormat(Resources.StoppingWorkerServiceCompleted, installItem.PackageName, installItem.Instance);
-			}
-			catch (Exception error)
-			{
-				Log.Default.ErrorFormat(Resources.StoppingWorkerServiceCompletedWithError, installItem.PackageName, installItem.Instance, error);
-			}
-		}
-	}
+        private async Task StopAppServices(StopCommandContext context)
+        {
+            foreach (var appInstallation in context.AppInstallations)
+            {
+                _log.InfoFormat(Resources.StartCommandHandler_StartAppService, appInstallation);
+
+                var serviceOptions = new AppServiceOptions
+                {
+                    PackageId = appInstallation.PackageId,
+                    PackageVersion = appInstallation.PackageVersion,
+                    PackageInstance = appInstallation.Instance,
+                    PackageDirectory = appInstallation.Directory.FullName,
+                    PackageTimeout = context.CommandOptions.Timeout
+                };
+
+                // Остановка рабочего процесса приложения
+                await _appService.Stop(serviceOptions);
+            }
+        }
+
+
+        class StopCommandContext
+        {
+            public StopCommandOptions CommandOptions;
+
+            public InstallDirectoryItem[] AppInstallations;
+        }
+    }
 }

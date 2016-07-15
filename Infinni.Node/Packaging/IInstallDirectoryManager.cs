@@ -2,50 +2,36 @@
 
 namespace Infinni.Node.Packaging
 {
-	/// <summary>
-	/// Менеджер по работе с каталогом установки.
-	/// </summary>
-	internal interface IInstallDirectoryManager
-	{
-		/// <summary>
-		/// Возвращает путь к каталогу.
-		/// </summary>
-		/// <param name="packageName">Наименование пакета.</param>
-		/// <param name="instance">Экземпляр пакета.</param>
-		string GetPath(PackageName packageName, string instance = null);
+    /// <summary>
+    /// Менеджер по работе с каталогом установки.
+    /// </summary>
+    public interface IInstallDirectoryManager
+    {
+        /// <summary>
+        /// Создает сведения об установке приложения.
+        /// </summary>
+        /// <param name="packageId">ID пакета.</param>
+        /// <param name="packageVersion">Версия пакета.</param>
+        /// <param name="instance">Экземпляр пакета.</param>
+        InstallDirectoryItem Create(string packageId, string packageVersion, string instance);
 
-		/// <summary>
-		/// Проверяет существование каталога.
-		/// </summary>
-		/// <param name="packageName">Наименование пакета.</param>
-		/// <param name="instance">Экземпляр пакета.</param>
-		bool Exists(PackageName packageName, string instance = null);
+        /// <summary>
+        /// Устанавливает файлы в каталог.
+        /// </summary>
+        /// <param name="appInstallation">Сведения об установке приложения.</param>
+        /// <param name="appPackages">Список пакетов для установки.</param>
+        /// <param name="appFiles">Список дополнительных файлов.</param>
+        void Install(InstallDirectoryItem appInstallation, IEnumerable<PackageContent> appPackages, params string[] appFiles);
 
-		/// <summary>
-		/// Создает каталог.
-		/// </summary>
-		/// <param name="packageName">Наименование пакета.</param>
-		/// <param name="instance">Экземпляр пакета.</param>
-		void Create(PackageName packageName, string instance = null);
+        /// <summary>
+        /// Удаляет каталог.
+        /// </summary>
+        /// <param name="appInstallation">Сведения об установке приложения.</param>
+        void Delete(InstallDirectoryItem appInstallation);
 
-		/// <summary>
-		/// Удаляет каталог.
-		/// </summary>
-		/// <param name="packageName">Наименование пакета.</param>
-		/// <param name="instance">Экземпляр пакета.</param>
-		void Delete(PackageName packageName, string instance = null);
-
-		/// <summary>
-		/// Устанавливает файлы в каталог.
-		/// </summary>
-		/// <param name="package">Информация о пакете.</param>
-		/// <param name="instance">Экземпляр пакета.</param>
-		/// <param name="files">Список дополнительных файлов.</param>
-		void Install(Package package, string instance = null, params string[] files);
-
-		/// <summary>
-		/// Возвращает список установок.
-		/// </summary>
-		IEnumerable<InstallDirectoryItem> GetItems();
-	}
+        /// <summary>
+        /// Возвращает список установок.
+        /// </summary>
+        IEnumerable<InstallDirectoryItem> GetItems();
+    }
 }

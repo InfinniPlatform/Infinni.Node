@@ -1,36 +1,40 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
+
+using NuGet.Packaging.Core;
 
 namespace Infinni.Node.Packaging
 {
     /// <summary>
-	/// Содержимое пакета.
-	/// </summary>
-	[DebuggerDisplay("{Name}")]
-	internal sealed class PackageContent
-	{
-		public PackageContent(PackageName name, string path, IDictionary<string, PackageContentPart> parts)
-		{
-			Name = name;
-			Path = path;
-			Parts = new ReadOnlyDictionary<string, PackageContentPart>(parts ?? new Dictionary<string, PackageContentPart>());
-		}
+    /// Содержимое пакета.
+    /// </summary>
+    public class PackageContent
+    {
+        public PackageContent(PackageIdentity identity, IEnumerable<PackageIdentity> dependencies)
+        {
+            Identity = identity;
+            Dependencies = dependencies;
+            Lib = new List<PackageFile>();
+            Content = new List<PackageFile>();
+        }
 
+        /// <summary>
+        /// Идентификатор пакета.
+        /// </summary>
+        public PackageIdentity Identity { get; }
 
-		/// <summary>
-		/// Наименование пакета.
-		/// </summary>
-		public readonly PackageName Name;
+        /// <summary>
+        /// Список зависимостей пакета.
+        /// </summary>
+        public IEnumerable<PackageIdentity> Dependencies { get; }
 
-		/// <summary>
-		/// Путь к каталогу пакета.
-		/// </summary>
-		public readonly string Path;
+        /// <summary>
+        /// Список файлов каталога 'lib'.
+        /// </summary>
+        public List<PackageFile> Lib { get; }
 
-		/// <summary>
-		/// Список разделов содержимого пакета.
-		/// </summary>
-		public readonly IReadOnlyDictionary<string, PackageContentPart> Parts;
-	}
+        /// <summary>
+        /// Список файлов каталога 'content'.
+        /// </summary>
+        public List<PackageFile> Content { get; }
+    }
 }

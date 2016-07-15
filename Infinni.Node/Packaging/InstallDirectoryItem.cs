@@ -1,69 +1,76 @@
 ﻿using System.IO;
 using System.Text.RegularExpressions;
 
+using Infinni.NodeWorker.Services;
+
 namespace Infinni.Node.Packaging
 {
-	/// <summary>
-	/// Элемент каталога установки.
-	/// </summary>
-	internal sealed class InstallDirectoryItem
-	{
-		public InstallDirectoryItem(PackageName packageName, string instance = null)
-		{
-			PackageName = packageName;
-			Instance = instance;
-		}
+    /// <summary>
+    /// Сведения об установке приложения.
+    /// </summary>
+    public class InstallDirectoryItem
+    {
+        private static readonly Regex DirectoryNameRegex = new Regex(@"^(?<Id>.*?)\.(?<Version>[0-9]+(\.[0-9]+(\.[0-9]+(\.[0-9]+){0,1}){0,1}){0,1}(\-.*?){0,1})(" + CommonHelpers.InstanceDelimiter + "(?<Instance>[^" + CommonHelpers.InstanceDelimiter + "]+)){0,1}$", RegexOptions.Compiled);
 
 
-		/// <summary>
-		/// Наименование пакета.
-		/// </summary>
-		public readonly PackageName PackageName;
-
-		/// <summary>
-		/// Экземпляр пакета.
-		/// </summary>
-		public readonly string Instance;
+        public InstallDirectoryItem(string packageId, string packageVersion, string instance, DirectoryInfo directory)
+        {
+            PackageId = packageId;
+            PackageVersion = packageVersion;
+            Instance = instance;
+            Directory = directory;
+        }
 
 
-		/// <summary>
-		/// Возвращает путь к каталогу.
-		/// </summary>
-		public string GetPath(string rootPath)
-		{
-			var packageDir = PackageName.ToString();
+        /// <summary>
+        /// ID пакета приложения.
+        /// </summary>
+        public readonly string PackageId;
 
-			if (!string.IsNullOrWhiteSpace(Instance))
-			{
-				packageDir += "$" + Instance.Trim();
-			}
+        /// <summary>
+        /// Версия пакета приложения.
+        /// </summary>
+        public readonly string PackageVersion;
 
-			return Path.Combine(rootPath, packageDir);
-		}
+        /// <summary>
+        /// Экземпляр приложения.
+        /// </summary>
+        public readonly string Instance;
+
+        /// <summary>
+        /// Каталог установки приложения.
+        /// </summary>
+        public readonly DirectoryInfo Directory;
 
 
-		public static InstallDirectoryItem Parse(string path)
-		{
-			if (!string.IsNullOrWhiteSpace(path))
-			{
-				var directoryName = Path.GetFileName(path);
+        public static InstallDirectoryItem Parse(string directoryPath)
+        {
+            if (!string.IsNullOrWhiteSpace(directoryPath))
+            {
+                var directoryName = Path.GetFileName(directoryPath);
 
-				if (!string.IsNullOrWhiteSpace(directoryName))
-				{
-					var directoryInfo = Regex.Match(directoryName, @"^(?<Id>.*?)\.(?<Version>[0-9]+(\.[0-9]+(\.[0-9]+(\.[0-9]+){0,1}){0,1}){0,1}(\-.*?){0,1})(\$(?<Instance>.*?)){0,1}$", RegexOptions.Compiled);
+                if (!string.IsNullOrWhiteSpace(directoryName))
+                {
+                    var directoryNameMatch = DirectoryNameRegex.Match(directoryName);
 
-					if (directoryInfo.Success)
-					{
-						var packageId = directoryInfo.Groups["Id"].Value;
-						var packageVersion = directoryInfo.Groups["Version"].Value;
-						var packageInstance = directoryInfo.Groups["Instance"].Value;
+                    if (directoryNameMatch.Success)
+                    {
+                        var packageId = directoryNameMatch.Groups["Id"].Value;
+                        var packageVersion = directoryNameMatch.Groups["Version"].Value;
+                        var packageInstance = directoryNameMatch.Groups["Instance"].Value;
 
-						return new InstallDirectoryItem(new PackageName(packageId, packageVersion), packageInstance);
-					}
-				}
-			}
+                        return new InstallDirectoryItem(packageId, packageVersion, packageInstance, new DirectoryInfo(directoryPath));
+                    }
+                }
+            }
 
-			return null;
-		}
-	}
+            return null;
+        }
+
+
+        public override string ToString()
+        {
+            return Directory.Name;
+        }
+    }
 }
