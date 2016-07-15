@@ -50,42 +50,41 @@ namespace Infinni.Node.CommandHandlers
 
                     var rollbackErrors = await Rollback(context, rollbackPath);
 
-                    throw new AggregateException(Properties.Resources.ExecutingTransactionFailed, new[] { error }.Concat(rollbackErrors));
+                    if (rollbackErrors.Count > 0)
+                    {
+                        throw new AggregateException(Properties.Resources.ExecutingTransactionFailed, new[] { error }.Concat(rollbackErrors));
+                    }
+
+                    _log.Error(Properties.Resources.ExecutingTransactionFailed);
+
+                    throw;
                 }
             }
         }
 
 
-        public async Task Rollback(TContext context)
-        {
-            var rollbackErrors = await Rollback(context, Enumerable.Reverse(_stages));
-
-            if (rollbackErrors.Count > 0)
-            {
-                throw new AggregateException(Properties.Resources.ExecutingRollbackTransactionFailed, rollbackErrors);
-            }
-        }
-
-
-        private async Task<List<Exception>> Rollback(TContext context, IEnumerable<StageInfo> rollbackPath)
+        private async Task<List<Exception>> Rollback(TContext context, Stack<StageInfo> rollbackPath)
         {
             var errors = new List<Exception>();
 
-            foreach (var stage in rollbackPath)
+            if (rollbackPath.Any(i => i.CanRollback))
             {
-                _log.InfoFormat(Properties.Resources.RollbackStageIsStarted, stage);
-
-                try
+                foreach (var stage in rollbackPath)
                 {
-                    await stage.Rollback(context);
+                    _log.InfoFormat(Properties.Resources.RollbackStageIsStarted, stage);
 
-                    _log.InfoFormat(Properties.Resources.RollbackStageIsSuccessfullyCompleted, stage);
-                }
-                catch (Exception error)
-                {
-                    _log.ErrorFormat(Properties.Resources.RollbackStageIsCompletedWithErrors, stage, error);
+                    try
+                    {
+                        await stage.Rollback(context);
 
-                    errors.Add(error);
+                        _log.InfoFormat(Properties.Resources.RollbackStageIsSuccessfullyCompleted, stage);
+                    }
+                    catch (Exception error)
+                    {
+                        _log.ErrorFormat(Properties.Resources.RollbackStageIsCompletedWithErrors, stage, error);
+
+                        errors.Add(error);
+                    }
                 }
             }
 
@@ -108,33 +107,24 @@ namespace Infinni.Node.CommandHandlers
             private readonly Func<TContext, Task> _rollback;
 
 
+            public bool CanExecute => _execute != null;
+
+            public bool CanRollback => _rollback != null;
+
+
             public async Task Execute(TContext context)
             {
-                if (_execute != null)
+                if (CanExecute)
                 {
-                    try
-                    {
-                        await _execute(context);
-                    }
-                    catch (Exception error)
-                    {
-                        throw new InvalidOperationException(string.Format(Properties.Resources.CantExecuteStage, _name), error);
-                    }
+                    await _execute(context);
                 }
             }
 
             public async Task Rollback(TContext context)
             {
-                if (_rollback != null)
+                if (CanRollback)
                 {
-                    try
-                    {
-                        await _rollback(context);
-                    }
-                    catch (Exception error)
-                    {
-                        throw new InvalidOperationException(string.Format(Properties.Resources.CantRollbackStage, _name), error);
-                    }
+                    await _rollback(context);
                 }
             }
 

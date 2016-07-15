@@ -67,11 +67,18 @@ namespace Infinni.Node.CommandHandlers
             var appPackageId = context.CommandOptions.Id;
             var appPackageVersion = context.CommandOptions.Version;
 
-            context.AppPackageContent = await context.PackageRepository.InstallPackage(appPackageId, appPackageVersion, context.CommandOptions.AllowPrereleaseVersions);
+            try
+            {
+                context.AppPackageContent = await context.PackageRepository.InstallPackage(appPackageId, appPackageVersion, context.CommandOptions.AllowPrereleaseVersions);
+            }
+            catch (InvalidOperationException exception)
+            {
+                throw new CommandHandlerException(exception.Message, exception);
+            }
 
             if (context.AppPackageContent == null)
             {
-                throw new InvalidOperationException(string.Format(Resources.InstallCommandHandler_AppPackageNotFound, CommonHelpers.GetAppName(appPackageId, appPackageVersion)));
+                throw new CommandHandlerException(string.Format(Resources.InstallCommandHandler_AppPackageNotFound, CommonHelpers.GetAppName(appPackageId, appPackageVersion)));
             }
         }
 
@@ -84,7 +91,7 @@ namespace Infinni.Node.CommandHandlers
 
             if (context.AppInstallation.Directory.Exists)
             {
-                throw new InvalidOperationException(string.Format(Resources.InstallCommandHandler_AppAlreadyInstalled, CommonHelpers.GetAppName(appPackageId, appPackageVersion, context.CommandOptions.Instance)));
+                throw new CommandHandlerException(string.Format(Resources.InstallCommandHandler_AppAlreadyInstalled, CommonHelpers.GetAppName(appPackageId, appPackageVersion, context.CommandOptions.Instance)));
             }
 
             return AsyncHelper.EmptyTask;
@@ -99,7 +106,7 @@ namespace Infinni.Node.CommandHandlers
 
             if (context.SdkDependencyIdentity == null)
             {
-                throw new InvalidOperationException(string.Format(Resources.InstallCommandHandler_SdkDependencyNotFound, CommonHelpers.GetAppName(appPackageId, appPackageVersion)));
+                throw new CommandHandlerException(string.Format(Resources.InstallCommandHandler_SdkDependencyNotFound, CommonHelpers.GetAppName(appPackageId, appPackageVersion)));
             }
 
             return AsyncHelper.EmptyTask;
@@ -109,11 +116,18 @@ namespace Infinni.Node.CommandHandlers
         {
             var sdkPackageVersion = context.SdkDependencyIdentity.Version.ToString();
 
-            context.PlatformPackageContent = await context.PackageRepository.InstallPackage(InfinniPlatform, sdkPackageVersion, context.CommandOptions.AllowPrereleaseVersions);
+            try
+            {
+                context.PlatformPackageContent = await context.PackageRepository.InstallPackage(InfinniPlatform, sdkPackageVersion, context.CommandOptions.AllowPrereleaseVersions);
+            }
+            catch (InvalidOperationException exception)
+            {
+                throw new CommandHandlerException(exception.Message, exception);
+            }
 
             if (context.PlatformPackageContent == null)
             {
-                throw new InvalidOperationException(string.Format(Resources.InstallCommandHandler_PlatformPackageNotFound, CommonHelpers.GetAppName(InfinniPlatform, sdkPackageVersion)));
+                throw new CommandHandlerException(string.Format(Resources.InstallCommandHandler_PlatformPackageNotFound, CommonHelpers.GetAppName(InfinniPlatform, sdkPackageVersion)));
             }
         }
 

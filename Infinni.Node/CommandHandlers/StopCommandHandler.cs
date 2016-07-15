@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 using Infinni.Node.CommandOptions;
 using Infinni.Node.Packaging;
@@ -52,7 +51,7 @@ namespace Infinni.Node.CommandHandlers
 
             if (context.AppInstallations == null || context.AppInstallations.Length <= 0)
             {
-                throw new InvalidOperationException(Resources.StopCommandHandler_CanNotFindAnyApplicationsToStop);
+                throw new CommandHandlerException(Resources.StopCommandHandler_CanNotFindAnyApplicationsToStop);
             }
 
             return AsyncHelper.EmptyTask;

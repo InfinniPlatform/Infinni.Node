@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 using Infinni.Node.CommandOptions;
 using Infinni.Node.Packaging;
@@ -53,7 +52,7 @@ namespace Infinni.Node.CommandHandlers
 
             if (context.AppInstallations == null || context.AppInstallations.Length <= 0)
             {
-                throw new InvalidOperationException(Resources.UninstallCommandHandler_CanNotFindAnyApplicationsToUninstall);
+                throw new CommandHandlerException(Resources.UninstallCommandHandler_CanNotFindAnyApplicationsToUninstall);
             }
 
             return AsyncHelper.EmptyTask;

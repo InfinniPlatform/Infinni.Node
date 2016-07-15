@@ -53,7 +53,7 @@ namespace Infinni.Node.CommandHandlers
 
             if (context.AppInstallations == null || context.AppInstallations.Length <= 0)
             {
-                throw new InvalidOperationException(Resources.StatusCommandHandler_CanNotFindAnyApplicationsToGetStatus);
+                throw new CommandHandlerException(Resources.StatusCommandHandler_CanNotFindAnyApplicationsToGetStatus);
             }
 
             return AsyncHelper.EmptyTask;

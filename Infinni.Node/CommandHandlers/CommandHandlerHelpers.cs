@@ -35,7 +35,7 @@ namespace Infinni.Node.CommandHandlers
         {
             if (!IsRunningAsRoot())
             {
-                throw new InvalidOperationException(Resources.YouMustHaveAdministrativePrivilegesToRunThisCommand);
+                throw new CommandHandlerException(Resources.YouMustHaveAdministrativePrivilegesToRunThisCommand);
             }
         }
 

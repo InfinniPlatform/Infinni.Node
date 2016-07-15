@@ -17,8 +17,6 @@ using NuGet.Protocol.Core.v3;
 using NuGet.Resolver;
 using NuGet.Versioning;
 
-using Resources = Infinni.Node.Properties.Resources;
-
 namespace Infinni.Node.Packaging
 {
     /// <summary>
@@ -65,7 +63,7 @@ namespace Infinni.Node.Packaging
             }
 
             // Конфигурационный файл NuGet.config по умолчанию
-            var settings = new NuGet.Configuration.Settings(_packagesPath, "NuGet.config");
+            var settings = new Settings(_packagesPath, "NuGet.config");
 
             // Фабрика источников пактов на основе конфигурационного файла
             var packageSourceProvider = new PackageSourceProvider(settings);
@@ -102,7 +100,7 @@ namespace Infinni.Node.Packaging
 
                 if (packageNuGetVersion == null)
                 {
-                    throw new InvalidOperationException(string.Format(Resources.PackageNotFound, packageId));
+                    throw new InvalidOperationException(string.Format(Properties.Resources.PackageNotFound, packageId));
                 }
             }
 
@@ -252,6 +250,17 @@ namespace Infinni.Node.Packaging
             if (sourcePath.StartsWith(partFrameworkPath, StringComparison.OrdinalIgnoreCase))
             {
                 installPath = sourcePath.Substring(partFrameworkPath.Length);
+            }
+            else if (!Equals(sourceFramework, NuGetFramework.AnyFramework))
+            {
+                // Обработка нестандартных путей, например, 'lib/net45-full/log4net.dll'
+
+                var index = sourcePath.IndexOf(Path.DirectorySeparatorChar, sourcePart.Length + 1);
+
+                if (index >= 0)
+                {
+                    installPath = sourcePath.Substring(index + 1);
+                }
             }
 
             return new PackageFile(Path.Combine(packagePath, sourcePath), installPath);

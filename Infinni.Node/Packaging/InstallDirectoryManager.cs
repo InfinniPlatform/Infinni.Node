@@ -68,7 +68,7 @@ namespace Infinni.Node.Packaging
                 // Копирование файлов из каталога 'content'
                 foreach (var contentFile in package.Content)
                 {
-                    var destinationPath = Path.Combine(installPath, contentFile.InstallPath);
+                    var destinationPath = Path.Combine(installPath, "content", contentFile.InstallPath);
                     CopyFileWithOverwrite(contentFile.SourcePath, destinationPath, installFiles);
                 }
             }

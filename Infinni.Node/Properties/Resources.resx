@@ -123,24 +123,6 @@
   <data name="UninstallCommandHandler_CanNotFindAnyApplicationsToUninstall" xml:space="preserve">
     <value>Can not find any applications to uninstall.</value>
   </data>
-  <data name="CantExecuteStage" xml:space="preserve">
-    <value>Cannot execute stage: '{0}'.</value>
-  </data>
-  <data name="CantRollbackStage" xml:space="preserve">
-    <value>Cannot rollback stage: '{0}'.</value>
-  </data>
-  <data name="DeletingPackageFiles" xml:space="preserve">
-    <value>Deleting package files for the application '{0}' (instance '{1}').</value>
-  </data>
-  <data name="DeletingPackageFilesCompleted" xml:space="preserve">
-    <value>Deleting package files for the application '{0}' (instance '{1}') completed successfully.</value>
-  </data>
-  <data name="DeletingPackageFilesCompletedWithError" xml:space="preserve">
-    <value>Deleting package files for the application '{0}' (instance '{1}') completed with errors: '{2}'.</value>
-  </data>
-  <data name="ExecutingRollbackTransactionFailed" xml:space="preserve">
-    <value>Executing rollback transaction failed.</value>
-  </data>
   <data name="ExecutingStageIsCompletedWithErrors" xml:space="preserve">
     <value>Executing stage '{0}' is completed with errors: '{1}'.</value>
   </data>
@@ -151,7 +133,7 @@
     <value>Executing stage '{0}' is successfully completed.</value>
   </data>
   <data name="ExecutingTransactionFailed" xml:space="preserve">
-    <value>Executing transaction failed.</value>
+    <value>Command executed with errors.</value>
   </data>
   <data name="FileWillBeOverwritten" xml:space="preserve">
     <value>File '{0}' will be overwritten. New source: '{1}', previous source: {2}.</value>
@@ -189,9 +171,6 @@
   <data name="PackageNotFound" xml:space="preserve">
     <value>Package '{0}' not found.</value>
   </data>
-  <data name="RegisterServiceFileStage" xml:space="preserve">
-    <value>Registering service file</value>
-  </data>
   <data name="RollbackStageIsCompletedWithErrors" xml:space="preserve">
     <value>Rollback stage '{0}' is completed with errors: '{1}'.</value>
   </data>
@@ -200,24 +179,6 @@
   </data>
   <data name="RollbackStageIsSuccessfullyCompleted" xml:space="preserve">
     <value>Rollback stage '{0}' is successfully completed.</value>
-  </data>
-  <data name="StartingWorkerService" xml:space="preserve">
-    <value>Starting the service for the application '{0}' (instance '{1}').</value>
-  </data>
-  <data name="StartingWorkerServiceCompleted" xml:space="preserve">
-    <value>Starting the service for the application '{0}' (instance '{1}') completed successfully.</value>
-  </data>
-  <data name="StartingWorkerServiceCompletedWithError" xml:space="preserve">
-    <value>Starting the service for the application '{0}' (instance '{1}') completed with errors: '{2}'.</value>
-  </data>
-  <data name="StoppingWorkerService" xml:space="preserve">
-    <value>Stopping the service for the application '{0}' (instance '{1}').</value>
-  </data>
-  <data name="StoppingWorkerServiceCompleted" xml:space="preserve">
-    <value>Stopping the service for the application '{0}' (instance '{1}') completed successfully.</value>
-  </data>
-  <data name="StoppingWorkerServiceCompletedWithError" xml:space="preserve">
-    <value>Stopping the service for the application '{0}' (instance '{1}') completed with errors: '{2}'.</value>
   </data>
   <data name="YouMustHaveAdministrativePrivilegesToRunThisCommand" xml:space="preserve">
     <value>You must have administrative privileges to run this command.</value>

@@ -61,60 +61,6 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot execute stage: &apos;{0}&apos;..
-        /// </summary>
-        internal static string CantExecuteStage {
-            get {
-                return ResourceManager.GetString("CantExecuteStage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Cannot rollback stage: &apos;{0}&apos;..
-        /// </summary>
-        internal static string CantRollbackStage {
-            get {
-                return ResourceManager.GetString("CantRollbackStage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Deleting package files for the application &apos;{0}&apos; (instance &apos;{1}&apos;)..
-        /// </summary>
-        internal static string DeletingPackageFiles {
-            get {
-                return ResourceManager.GetString("DeletingPackageFiles", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Deleting package files for the application &apos;{0}&apos; (instance &apos;{1}&apos;) completed successfully..
-        /// </summary>
-        internal static string DeletingPackageFilesCompleted {
-            get {
-                return ResourceManager.GetString("DeletingPackageFilesCompleted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Deleting package files for the application &apos;{0}&apos; (instance &apos;{1}&apos;) completed with errors: &apos;{2}&apos;..
-        /// </summary>
-        internal static string DeletingPackageFilesCompletedWithError {
-            get {
-                return ResourceManager.GetString("DeletingPackageFilesCompletedWithError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Executing rollback transaction failed..
-        /// </summary>
-        internal static string ExecutingRollbackTransactionFailed {
-            get {
-                return ResourceManager.GetString("ExecutingRollbackTransactionFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Executing stage &apos;{0}&apos; is completed with errors: &apos;{1}&apos;..
         /// </summary>
         internal static string ExecutingStageIsCompletedWithErrors {
@@ -142,7 +88,7 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Executing transaction failed..
+        ///   Looks up a localized string similar to Command executed with errors..
         /// </summary>
         internal static string ExecutingTransactionFailed {
             get {
@@ -259,15 +205,6 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Registering service file.
-        /// </summary>
-        internal static string RegisterServiceFileStage {
-            get {
-                return ResourceManager.GetString("RegisterServiceFileStage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Rollback stage &apos;{0}&apos; is completed with errors: &apos;{1}&apos;..
         /// </summary>
         internal static string RollbackStageIsCompletedWithErrors {
@@ -331,33 +268,6 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Starting the service for the application &apos;{0}&apos; (instance &apos;{1}&apos;)..
-        /// </summary>
-        internal static string StartingWorkerService {
-            get {
-                return ResourceManager.GetString("StartingWorkerService", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Starting the service for the application &apos;{0}&apos; (instance &apos;{1}&apos;) completed successfully..
-        /// </summary>
-        internal static string StartingWorkerServiceCompleted {
-            get {
-                return ResourceManager.GetString("StartingWorkerServiceCompleted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Starting the service for the application &apos;{0}&apos; (instance &apos;{1}&apos;) completed with errors: &apos;{2}&apos;..
-        /// </summary>
-        internal static string StartingWorkerServiceCompletedWithError {
-            get {
-                return ResourceManager.GetString("StartingWorkerServiceCompletedWithError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Can not find any applications to get status..
         /// </summary>
         internal static string StatusCommandHandler_CanNotFindAnyApplicationsToGetStatus {
@@ -408,33 +318,6 @@ namespace Infinni.Node.Properties {
         internal static string StopCommandHandler_StopAppServices {
             get {
                 return ResourceManager.GetString("StopCommandHandler_StopAppServices", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Stopping the service for the application &apos;{0}&apos; (instance &apos;{1}&apos;)..
-        /// </summary>
-        internal static string StoppingWorkerService {
-            get {
-                return ResourceManager.GetString("StoppingWorkerService", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Stopping the service for the application &apos;{0}&apos; (instance &apos;{1}&apos;) completed successfully..
-        /// </summary>
-        internal static string StoppingWorkerServiceCompleted {
-            get {
-                return ResourceManager.GetString("StoppingWorkerServiceCompleted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Stopping the service for the application &apos;{0}&apos; (instance &apos;{1}&apos;) completed with errors: &apos;{2}&apos;..
-        /// </summary>
-        internal static string StoppingWorkerServiceCompletedWithError {
-            get {
-                return ResourceManager.GetString("StoppingWorkerServiceCompletedWithError", resourceCulture);
             }
         }
         
