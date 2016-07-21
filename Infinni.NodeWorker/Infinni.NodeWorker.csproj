@@ -73,6 +73,9 @@
     <Compile Include="..\.files\Packaging\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AssemblyNameComparer.cs" />
+    <Compile Include="DirectoryAssemblyCatalog.cs" />
+    <Compile Include="DirectoryAssemblyLoadContext.cs" />
     <Compile Include="Logging\Log.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -81,20 +84,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Services\AppServiceHostPipeClient.cs" />
-    <Compile Include="Services\CommonHelpers.cs" />
-    <Compile Include="Services\IAppServiceHost.cs" />
-    <Compile Include="Services\AppServiceHostDomainProxy.cs" />
-    <Compile Include="Services\AppServiceHostImplementation.cs" />
+    <Compile Include="Services\AppServiceHost.cs" />
     <Compile Include="Services\AppServiceOptions.cs" />
-    <Compile Include="Services\AppServiceHostPipeServer.cs" />
-    <Compile Include="Settings\AppSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Infinni.NodeWorker.Log.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -21,11 +21,6 @@
         public string PackageInstance { get; set; }
 
         /// <summary>
-        /// Файл конфигурации приложения.
-        /// </summary>
-        public string PackageConfig { get; set; }
-
-        /// <summary>
         /// Рабочий каталог приложения.
         /// </summary>
         public string PackageDirectory { get; set; }

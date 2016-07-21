@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-using Infinni.NodeWorker.Services;
+using Infinni.Node.Packaging;
 
 namespace Infinni.Node.Services
 {
@@ -12,31 +12,34 @@ namespace Infinni.Node.Services
         /// <summary>
         /// Устанавливает сервис приложения.
         /// </summary>
-        /// <param name="options">Параметры сервиса приложения.</param>
-        Task Install(AppServiceOptions options);
+        /// <param name="appInstallation">Сведения об установке приложения.</param>
+        Task Install(InstallDirectoryItem appInstallation);
 
         /// <summary>
         /// Удаляет сервис приложения.
         /// </summary>
-        /// <param name="options">Параметры сервиса приложения.</param>
-        Task Uninstall(AppServiceOptions options);
+        /// <param name="appInstallation">Сведения об установке приложения.</param>
+        Task Uninstall(InstallDirectoryItem appInstallation);
 
         /// <summary>
         /// Запускает сервис приложения.
         /// </summary>
-        /// <param name="options">Параметры сервиса приложения.</param>
-        Task Start(AppServiceOptions options);
+        /// <param name="appInstallation">Сведения об установке приложения.</param>
+        /// <param name="timeoutSeconds">Таймаут выполнения операции (в секундах).</param>
+        Task Start(InstallDirectoryItem appInstallation, int? timeoutSeconds = null);
 
         /// <summary>
         /// Останавливает сервис приложения.
         /// </summary>
-        /// <param name="options">Параметры сервиса приложения.</param>
-        Task Stop(AppServiceOptions options);
+        /// <param name="appInstallation">Сведения об установке приложения.</param>
+        /// <param name="timeoutSeconds">Таймаут выполнения операции (в секундах).</param>
+        Task Stop(InstallDirectoryItem appInstallation, int? timeoutSeconds = null);
 
         /// <summary>
         /// Возвращает состояние сервиса приложения.
         /// </summary>
-        /// <param name="options">Параметры сервиса приложения.</param>
-        Task<object> GetStatus(AppServiceOptions options);
+        /// <param name="appInstallation">Сведения об установке приложения.</param>
+        /// <param name="timeoutSeconds">Таймаут выполнения операции (в секундах).</param>
+        Task<object> GetStatus(InstallDirectoryItem appInstallation, int? timeoutSeconds = null);
     }
 }

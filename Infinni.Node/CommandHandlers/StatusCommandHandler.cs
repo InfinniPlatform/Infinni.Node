@@ -6,7 +6,6 @@ using Infinni.Node.CommandOptions;
 using Infinni.Node.Packaging;
 using Infinni.Node.Properties;
 using Infinni.Node.Services;
-using Infinni.NodeWorker.Services;
 
 using log4net;
 
@@ -65,7 +64,7 @@ namespace Infinni.Node.CommandHandlers
 
             foreach (var appInstallation in context.AppInstallations)
             {
-                var status = await GetStatusAppService(appInstallation);
+                var status = await GetStatusAppService(appInstallation, context.CommandOptions.Timeout);
 
                 statuses.Add(status);
             }
@@ -75,22 +74,14 @@ namespace Infinni.Node.CommandHandlers
             _log.Info(jStatuses);
         }
 
-        private async Task<object> GetStatusAppService(InstallDirectoryItem appInstallation)
+        private async Task<object> GetStatusAppService(InstallDirectoryItem appInstallation, int? timeoutSeconds)
         {
             object status = null;
             object error = null;
 
-            var serviceOptions = new AppServiceOptions
-            {
-                PackageId = appInstallation.PackageId,
-                PackageVersion = appInstallation.PackageVersion,
-                PackageInstance = appInstallation.Instance,
-                PackageDirectory = appInstallation.Directory.FullName
-            };
-
             try
             {
-                status = await _appService.GetStatus(serviceOptions);
+                status = await _appService.GetStatus(appInstallation, timeoutSeconds);
             }
             catch (AggregateException e)
             {

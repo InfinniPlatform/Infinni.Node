@@ -31,5 +31,14 @@ namespace Infinni.Node.CommandOptions
                        "If omitted, defaults to all instances."
             )]
         public string Instance { get; set; }
+
+        [Option(
+            't',
+            "timeout",
+            Required = false,
+            HelpText = "Specifies timeout (is seconds) of the package to get status. " +
+                       "If omitted, defaults infinite."
+            )]
+        public int? Timeout { get; set; }
     }
 }

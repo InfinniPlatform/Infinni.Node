@@ -3,7 +3,8 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-using Infinni.NodeWorker.Services;
+using Infinni.Node.Packaging;
+using Infinni.Node.Properties;
 
 namespace Infinni.Node.Services
 {
@@ -19,71 +20,51 @@ namespace Infinni.Node.Services
         private const string WorkerServiceStopVerb = "stop";
 
 
-        public Task Install(AppServiceOptions options)
+        public Task Install(InstallDirectoryItem appInstallation)
         {
-            return ExecuteWorkerService(WorkerServiceInstallVerb, options);
+            return ExecuteWorkerService(WorkerServiceInstallVerb, appInstallation);
         }
 
-        public Task Uninstall(AppServiceOptions options)
+        public Task Uninstall(InstallDirectoryItem appInstallation)
         {
-            return ExecuteWorkerService(WorkerServiceUninstallVerb, options);
+            return ExecuteWorkerService(WorkerServiceUninstallVerb, appInstallation);
         }
 
-        public Task Start(AppServiceOptions options)
+        public Task Start(InstallDirectoryItem appInstallation, int? timeoutSeconds = null)
         {
-            return ExecuteWorkerService(WorkerServiceStartVerb, options);
+            return ExecuteWorkerService(WorkerServiceStartVerb, appInstallation, timeoutSeconds);
         }
 
-        public Task Stop(AppServiceOptions options)
+        public Task Stop(InstallDirectoryItem appInstallation, int? timeoutSeconds = null)
         {
-            if (options.PackageTimeout == null)
-            {
-                return ExecuteWorkerService(WorkerServiceStopVerb, options);
-            }
-
-            return Task.Run(() =>
-            {
-                var timeout = TimeSpan.FromSeconds(options.PackageTimeout.Value);
-                return InvokeService(options, c => c.Stop(timeout));
-            });
+            return ExecuteWorkerService(WorkerServiceStopVerb, appInstallation, timeoutSeconds);
         }
 
-        public Task<object> GetStatus(AppServiceOptions options)
+        public Task<object> GetStatus(InstallDirectoryItem appInstallation, int? timeoutSeconds = null)
         {
-            return InvokeService(options, c => c.GetStatus());
+            return Task.FromResult<object>(Resources.NotImplemented);
         }
 
 
-        private static Task ExecuteWorkerService(string commandVerb, AppServiceOptions options)
+        private static Task ExecuteWorkerService(string commandVerb, InstallDirectoryItem appInstallation, int? timeoutSeconds = null)
         {
-            var workerServiceFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, WorkerServiceFile);
-            var workerServiceArguments = BuildServiceCommand(commandVerb, options);
+            var workerServiceFile = Path.Combine(appInstallation.Directory.FullName, WorkerServiceFile);
+            var workerServiceArguments = BuildServiceCommand(commandVerb, appInstallation, timeoutSeconds);
             return MonoHelper.ExecuteProcess(workerServiceFile, workerServiceArguments);
         }
 
-        private static string BuildServiceCommand(string commandVerb, AppServiceOptions options)
+        private static string BuildServiceCommand(string commandVerb, InstallDirectoryItem appInstallation, int? timeoutSeconds)
         {
             var command = new StringBuilder(commandVerb);
-            AddCommandOption(command, "packageId", options.PackageId);
-            AddCommandOption(command, "packageVersion", options.PackageVersion);
-            AddCommandOption(command, "packageInstance", options.PackageInstance);
-            AddCommandOption(command, "packageConfig", options.PackageConfig);
-            AddCommandOption(command, "packageDirectory", options.PackageDirectory);
-            AddCommandOption(command, "packageTimeout", options.PackageTimeout);
+            AddCommandOption(command, "packageId", appInstallation.PackageId);
+            AddCommandOption(command, "packageVersion", appInstallation.PackageVersion);
+            AddCommandOption(command, "packageInstance", appInstallation.Instance);
+            AddCommandOption(command, "packageDirectory", appInstallation.Directory.FullName);
+            AddCommandOption(command, "packageTimeout", timeoutSeconds);
 
             return command.ToString();
         }
 
-        private static Task<T> InvokeService<T>(AppServiceOptions options, Func<AppServiceHostPipeClient, T> action)
-        {
-            return Task.Run(() =>
-            {
-                using (var client = new AppServiceHostPipeClient(options.PackageId, options.PackageVersion, options.PackageInstance))
-                {
-                    return action(client);
-                }
-            });
-        }
 
         private static void AddCommandOption(StringBuilder command, string name, object value)
         {

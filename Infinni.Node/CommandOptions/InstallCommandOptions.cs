@@ -32,15 +32,6 @@ namespace Infinni.Node.CommandOptions
         public string Instance { get; set; }
 
         [Option(
-            'c',
-            "config",
-            Required = false,
-            HelpText = "Specifies the URL or directory path for the platform's configuration. " +
-                       "If omitted, looks in the currently selected package source to find the corresponding package URL."
-            )]
-        public string Config { get; set; }
-
-        [Option(
             's',
             "source",
             Required = false,

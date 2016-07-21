@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Linq;
 
-namespace Infinni.NodeWorker.Settings
+namespace Infinni.Node.Settings
 {
     /// <summary>
     /// Предоставляет доступ к настройкам приложения.

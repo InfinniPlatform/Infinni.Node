@@ -2,13 +2,16 @@
 using System.Linq;
 using System.Security.Principal;
 
-using Infinni.Node.Packaging;
+using Infinni.Node.CommandHandlers;
 using Infinni.Node.Properties;
 
-namespace Infinni.Node.CommandHandlers
+namespace Infinni.Node.Packaging
 {
-    public static class CommandHandlerHelpers
+    public static class CommonHelper
     {
+        public const char InstanceDelimiter = '@';
+
+
         public static InstallDirectoryItem[] GetItems(this IInstallDirectoryManager installDirectory, string packageId, string packageVersion, string packageInstance)
         {
             var installItems = installDirectory.GetItems();
@@ -30,6 +33,7 @@ namespace Infinni.Node.CommandHandlers
 
             return installItems.ToArray();
         }
+
 
         public static void CheckAdministrativePrivileges()
         {
@@ -64,6 +68,14 @@ namespace Infinni.Node.CommandHandlers
             }
 
             return false;
+        }
+
+
+        public static string GetAppName(string packageId, string packageVersion = null, string instance = null)
+        {
+            var packageName = string.IsNullOrWhiteSpace(packageVersion) ? packageId : $"{packageId}.{packageVersion}";
+
+            return string.IsNullOrWhiteSpace(instance) ? packageName : $"{packageName}{InstanceDelimiter}{instance}";
         }
     }
 }

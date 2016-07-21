@@ -1,8 +1,6 @@
 ﻿using System.IO;
 using System.Text.RegularExpressions;
 
-using Infinni.NodeWorker.Services;
-
 namespace Infinni.Node.Packaging
 {
     /// <summary>
@@ -10,7 +8,7 @@ namespace Infinni.Node.Packaging
     /// </summary>
     public class InstallDirectoryItem
     {
-        private static readonly Regex DirectoryNameRegex = new Regex(@"^(?<Id>.*?)\.(?<Version>[0-9]+(\.[0-9]+(\.[0-9]+(\.[0-9]+){0,1}){0,1}){0,1}(\-.*?){0,1})(" + CommonHelpers.InstanceDelimiter + "(?<Instance>[^" + CommonHelpers.InstanceDelimiter + "]+)){0,1}$", RegexOptions.Compiled);
+        private static readonly Regex DirectoryNameRegex = new Regex(@"^(?<Id>.*?)\.(?<Version>[0-9]+(\.[0-9]+(\.[0-9]+(\.[0-9]+){0,1}){0,1}){0,1}(\-.*?){0,1})(" + CommonHelper.InstanceDelimiter + "(?<Instance>[^" + CommonHelper.InstanceDelimiter + "]+)){0,1}$", RegexOptions.Compiled);
 
 
         public InstallDirectoryItem(string packageId, string packageVersion, string instance, DirectoryInfo directory)

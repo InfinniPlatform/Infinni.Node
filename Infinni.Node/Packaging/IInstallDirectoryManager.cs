@@ -3,7 +3,7 @@
 namespace Infinni.Node.Packaging
 {
     /// <summary>
-    /// Менеджер по работе с каталогом установки.
+    /// Менеджер по работе с каталогом установки приложения.
     /// </summary>
     public interface IInstallDirectoryManager
     {
@@ -16,12 +16,20 @@ namespace Infinni.Node.Packaging
         InstallDirectoryItem Create(string packageId, string packageVersion, string instance);
 
         /// <summary>
-        /// Устанавливает файлы в каталог.
+        /// Копирует файл пакета в каталог приложения.
         /// </summary>
         /// <param name="appInstallation">Сведения об установке приложения.</param>
-        /// <param name="appPackages">Список пакетов для установки.</param>
-        /// <param name="appFiles">Список дополнительных файлов.</param>
-        void Install(InstallDirectoryItem appInstallation, IEnumerable<PackageContent> appPackages, params string[] appFiles);
+        /// <param name="appFile">Файл пакета для копирования.</param>
+        /// <param name="appLibPath">Путь к исполняемым файлам в каталоге.</param>
+        void CopyFile(InstallDirectoryItem appInstallation, PackageFile appFile, string appLibPath);
+
+        /// <summary>
+        /// Копирует файлы пакета в каталог приложения.
+        /// </summary>
+        /// <param name="appInstallation">Сведения об установке приложения.</param>
+        /// <param name="appPackage">Содержимое пакета для копирования.</param>
+        /// <param name="appLibPath">Путь к исполняемым файлам в каталоге.</param>
+        void CopyFiles(InstallDirectoryItem appInstallation, PackageContent appPackage, string appLibPath);
 
         /// <summary>
         /// Удаляет каталог.

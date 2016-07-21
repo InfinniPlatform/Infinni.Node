@@ -15,8 +15,30 @@ namespace Infinni.NodeWorker
 
         public static int Main()
         {
+            /* Вся логика метода Main() находится в отдельных методах, чтобы JIT-компиляция Main()
+             * прошла без загрузки дополнительных сборок, поскольку до этого момента нужно успеть
+             * установить свою собственную логику загрузки сборок.
+             */
+
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
+            // Устанавливает для приложения контекст загрузки сборок по умолчанию
+            InitializeAssemblyLoadContext();
+
+            // Запускает хостинг приложения
+            return RunServiceHost();
+        }
+
+
+        private static void InitializeAssemblyLoadContext()
+        {
+            var context = new DirectoryAssemblyLoadContext();
+            DirectoryAssemblyLoadContext.InitializeDefaultContext(context);
+        }
+
+
+        private static int RunServiceHost()
+        {
             Log.Default.Info(Environment.CommandLine);
 
             var result = HostFactory.Run(config =>
@@ -27,7 +49,6 @@ namespace Infinni.NodeWorker
                     .AddStringParameter("packageId")
                     .AddStringParameter("packageVersion")
                     .AddStringParameter("packageInstance")
-                    .AddStringParameter("packageConfig")
                     .AddStringParameter("packageDirectory")
                     .AddStringParameter("packageTimeout"));
 
@@ -37,38 +58,23 @@ namespace Infinni.NodeWorker
                 config.SetStartTimeout(serviceTimeout);
                 config.SetStopTimeout(serviceTimeout);
 
-                config.Service<Tuple<IAppServiceHost, AppServiceHostPipeServer>>(s =>
+                config.Service<AppServiceHost>(s =>
                 {
                     s.ConstructUsing(hostSettings =>
                     {
-                        var serviceHost = new AppServiceHostDomainProxy(serviceOptions);
-                        var serviceHostPipeServer = new AppServiceHostPipeServer(serviceOptions, serviceHost);
-                        var instance = new Tuple<IAppServiceHost, AppServiceHostPipeServer>(serviceHost, serviceHostPipeServer);
-
+                        var instance = new AppServiceHost();
                         return instance;
                     });
 
                     s.WhenStarted((instance, hostControl) =>
                     {
-                        instance.Item1.Start(serviceTimeout);
-
-                        instance.Item2.OnStopServiceHost += hostControl.Stop;
-                        instance.Item2.Start();
-
+                        instance.Start(serviceTimeout);
                         return true;
                     });
 
                     s.WhenStopped((instance, hostControl) =>
                     {
-                        try
-                        {
-                            instance.Item1.Stop(serviceTimeout);
-                        }
-                        finally
-                        {
-                            instance.Item2.Stop();
-                        }
-
+                        instance.Stop(serviceTimeout);
                         return true;
                     });
                 });
@@ -98,7 +104,6 @@ namespace Infinni.NodeWorker
                 PackageId = GetParameterValue(parameters, "packageId", "Infinni.NodeWorker"),
                 PackageVersion = GetParameterValue(parameters, "packageVersion", "1.0.0"),
                 PackageInstance = GetParameterValue(parameters, "packageInstance"),
-                PackageConfig = GetParameterValue(parameters, "packageConfig"),
                 PackageDirectory = GetParameterValue(parameters, "packageDirectory"),
                 PackageTimeout = GetPackageTimeout(GetParameterValue(parameters, "packageTimeout"))
             };
@@ -127,8 +132,9 @@ namespace Infinni.NodeWorker
 
         private static string GetServiceName(AppServiceOptions serviceOptions)
         {
-            return CommonHelpers.GetAppName(serviceOptions.PackageId, serviceOptions.PackageVersion);
+            return $"{serviceOptions.PackageId}.{serviceOptions.PackageVersion}";
         }
+
 
         private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {

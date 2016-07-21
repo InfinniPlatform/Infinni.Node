@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-using Infinni.NodeWorker.Settings;
+using Infinni.Node.Settings;
 
 using NuGet.Logging;
 
@@ -10,7 +10,7 @@ namespace Infinni.Node.Packaging
     {
         private const string DefaultPackagesPath = "packages";
 
-        private static readonly string[] DefaultSourceRepositories =
+        private static readonly string[] DefaultPackageSources =
         {
             "https://api.nuget.org/v3/index.json",
             "https://www.nuget.org/api/v2/",
@@ -29,7 +29,7 @@ namespace Infinni.Node.Packaging
 
         public IPackageRepositoryManager Create(params string[] packageSources)
         {
-            var packagesPath = AppSettings.GetValue("LocalRepository", DefaultPackagesPath);
+            var packagesPath = AppSettings.GetValue("PackagesRepository", DefaultPackagesPath);
 
             packageSources = GetAllPackageSources(packageSources);
 
@@ -39,8 +39,8 @@ namespace Infinni.Node.Packaging
 
         private static string[] GetAllPackageSources(string[] packageSources)
         {
-            return DefaultSourceRepositories
-                .Union(AppSettings.GetValues("SourceRepositories", new string[] { }))
+            return DefaultPackageSources
+                .Union(AppSettings.GetValues("PackageSources", new string[] { }))
                 .Union(packageSources ?? new string[] { })
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .Select(i => i.Trim())

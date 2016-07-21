@@ -1,28 +1,14 @@
 ﻿using System;
 using System.ComponentModel.Composition.Hosting;
-using System.IO;
 
 namespace Infinni.NodeWorker.Services
 {
-    public class AppServiceHostImplementation : IAppServiceHost
+    public class AppServiceHost
     {
-        public AppServiceHostImplementation(string serviceHostContractName, string serviceHostSearchPattern)
+        public AppServiceHost()
         {
-            if (string.IsNullOrWhiteSpace(serviceHostContractName))
-            {
-                throw new ArgumentNullException(nameof(serviceHostContractName));
-            }
-
-            if (string.IsNullOrWhiteSpace(serviceHostSearchPattern))
-            {
-                serviceHostSearchPattern = "*.dll";
-            }
-
-            var directory = Directory.GetCurrentDirectory();
-            var directoryCatalog = new DirectoryCatalog(directory, serviceHostSearchPattern);
-            var compositionContainer = new CompositionContainer(directoryCatalog);
-
-            _host = compositionContainer.GetExport<dynamic>(serviceHostContractName);
+            // Поиск компонента для хостинга приложения
+            _host = CreateComponent<dynamic>("InfinniPlatformServiceHost");
         }
 
 
@@ -66,6 +52,15 @@ namespace Infinni.NodeWorker.Services
                     }
                 }
             }
+        }
+
+
+        private static Lazy<T> CreateComponent<T>(string contractName) where T : class
+        {
+            var aggregateCatalog = new DirectoryAssemblyCatalog();
+            var compositionContainer = new CompositionContainer(aggregateCatalog);
+            var lazyInstance = compositionContainer.GetExport<T>(contractName);
+            return lazyInstance;
         }
     }
 }

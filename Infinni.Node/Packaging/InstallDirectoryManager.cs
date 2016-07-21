@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 
 using Infinni.Node.Properties;
-using Infinni.NodeWorker.Services;
-using Infinni.NodeWorker.Settings;
+using Infinni.Node.Settings;
 
 using log4net;
 
 namespace Infinni.Node.Packaging
 {
     /// <summary>
-    /// Менеджер по работе с каталогом установки.
+    /// Менеджер по работе с каталогом установки приложения.
     /// </summary>
     public class InstallDirectoryManager : IInstallDirectoryManager
     {
@@ -31,7 +30,7 @@ namespace Infinni.Node.Packaging
 
         public InstallDirectoryItem Create(string packageId, string packageVersion, string instance)
         {
-            var appDirectoryName = CommonHelpers.GetAppName(packageId, packageVersion, instance);
+            var appDirectoryName = CommonHelper.GetAppName(packageId, packageVersion, instance);
             var appDirectoryPath = Path.Combine(_rootInstallPath, appDirectoryName);
             var appDirectory = new DirectoryInfo(appDirectoryPath);
 
@@ -46,7 +45,15 @@ namespace Infinni.Node.Packaging
             }
         }
 
-        public void Install(InstallDirectoryItem appInstallation, IEnumerable<PackageContent> appPackages, params string[] appFiles)
+        public void CopyFile(InstallDirectoryItem appInstallation, PackageFile appFile, string appLibPath)
+        {
+            var installPath = appInstallation.Directory.FullName;
+            var installFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var destinationPath = Path.Combine(installPath, appLibPath, appFile.InstallPath);
+            CopyFileWithOverwrite(appFile.SourcePath, destinationPath, installFiles);
+        }
+
+        public void CopyFiles(InstallDirectoryItem appInstallation, PackageContent appPackage, string appLibPath)
         {
             if (!appInstallation.Directory.Exists)
             {
@@ -56,34 +63,18 @@ namespace Infinni.Node.Packaging
             var installPath = appInstallation.Directory.FullName;
             var installFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var package in appPackages)
+            // Копирование файлов из каталога 'lib'
+            foreach (var libFile in appPackage.Lib)
             {
-                // Копирование файлов из каталога 'lib'
-                foreach (var libFile in package.Lib)
-                {
-                    var destinationPath = Path.Combine(installPath, libFile.InstallPath);
-                    CopyFileWithOverwrite(libFile.SourcePath, destinationPath, installFiles);
-                }
-
-                // Копирование файлов из каталога 'content'
-                foreach (var contentFile in package.Content)
-                {
-                    var destinationPath = Path.Combine(installPath, "content", contentFile.InstallPath);
-                    CopyFileWithOverwrite(contentFile.SourcePath, destinationPath, installFiles);
-                }
+                var destinationPath = Path.Combine(installPath, appLibPath, libFile.InstallPath);
+                CopyFileWithOverwrite(libFile.SourcePath, destinationPath, installFiles);
             }
 
-            if (appFiles != null)
+            // Копирование файлов из каталога 'content'
+            foreach (var contentFile in appPackage.Content)
             {
-                // Копирование дополнительных файлов в корень каталога установки
-                foreach (var file in appFiles)
-                {
-                    if (!string.IsNullOrWhiteSpace(file))
-                    {
-                        var destinationPath = Path.Combine(installPath, Path.GetFileName(file));
-                        CopyFileWithOverwrite(file, destinationPath, installFiles);
-                    }
-                }
+                var destinationPath = Path.Combine(installPath, "content", contentFile.InstallPath);
+                CopyFileWithOverwrite(contentFile.SourcePath, destinationPath, installFiles);
             }
         }
 

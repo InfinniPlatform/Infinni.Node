@@ -63,7 +63,7 @@ namespace Infinni.Node.Packaging
             }
 
             // Конфигурационный файл NuGet.config по умолчанию
-            var settings = new Settings(_packagesPath, "NuGet.config");
+            var settings = new NuGet.Configuration.Settings(_packagesPath, "NuGet.config");
 
             // Фабрика источников пактов на основе конфигурационного файла
             var packageSourceProvider = new PackageSourceProvider(settings);

@@ -4,7 +4,6 @@ using Infinni.Node.CommandOptions;
 using Infinni.Node.Packaging;
 using Infinni.Node.Properties;
 using Infinni.Node.Services;
-using Infinni.NodeWorker.Services;
 
 using log4net;
 
@@ -29,7 +28,7 @@ namespace Infinni.Node.CommandHandlers
 
         public override async Task Handle(UninstallCommandOptions options)
         {
-            CommandHandlerHelpers.CheckAdministrativePrivileges();
+            CommonHelper.CheckAdministrativePrivileges();
 
             var commandContext = new UninstallCommandContext
             {
@@ -64,16 +63,8 @@ namespace Infinni.Node.CommandHandlers
             {
                 _log.InfoFormat(Resources.UninstallCommandHandler_StartUninstallAppService, appInstallation);
 
-                var serviceOptions = new AppServiceOptions
-                {
-                    PackageId = appInstallation.PackageId,
-                    PackageVersion = appInstallation.PackageVersion,
-                    PackageInstance = appInstallation.Instance,
-                    PackageDirectory = appInstallation.Directory.FullName
-                };
-
                 // Удаление службы приложения
-                await _appService.Uninstall(serviceOptions);
+                await _appService.Uninstall(appInstallation);
             }
         }
 

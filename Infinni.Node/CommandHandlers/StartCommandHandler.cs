@@ -4,7 +4,6 @@ using Infinni.Node.CommandOptions;
 using Infinni.Node.Packaging;
 using Infinni.Node.Properties;
 using Infinni.Node.Services;
-using Infinni.NodeWorker.Services;
 
 using log4net;
 
@@ -29,7 +28,7 @@ namespace Infinni.Node.CommandHandlers
 
         public override async Task Handle(StartCommandOptions options)
         {
-            CommandHandlerHelpers.CheckAdministrativePrivileges();
+            CommonHelper.CheckAdministrativePrivileges();
 
             var commandContext = new StartCommandContext
             {
@@ -63,16 +62,8 @@ namespace Infinni.Node.CommandHandlers
             {
                 _log.InfoFormat(Resources.StartCommandHandler_StartAppService, appInstallation);
 
-                var serviceOptions = new AppServiceOptions
-                {
-                    PackageId = appInstallation.PackageId,
-                    PackageVersion = appInstallation.PackageVersion,
-                    PackageInstance = appInstallation.Instance,
-                    PackageDirectory = appInstallation.Directory.FullName
-                };
-
                 // Запуск рабочего процесса приложения
-                await _appService.Start(serviceOptions);
+                await _appService.Start(appInstallation, context.CommandOptions.Timeout);
             }
         }
 

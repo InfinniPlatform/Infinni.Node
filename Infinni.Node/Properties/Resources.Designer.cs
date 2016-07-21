@@ -178,6 +178,15 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Install the service host package.
+        /// </summary>
+        internal static string InstallCommandHandler_InstallServiceHostPackage {
+            get {
+                return ResourceManager.GetString("InstallCommandHandler_InstallServiceHostPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The platform package &apos;{0}&apos; not found..
         /// </summary>
         internal static string InstallCommandHandler_PlatformPackageNotFound {
@@ -192,6 +201,24 @@ namespace Infinni.Node.Properties {
         internal static string InstallCommandHandler_SdkDependencyNotFound {
             get {
                 return ResourceManager.GetString("InstallCommandHandler_SdkDependencyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The service host package &apos;{0}&apos; not found..
+        /// </summary>
+        internal static string InstallCommandHandler_ServiceHostPackageNotFound {
+            get {
+                return ResourceManager.GetString("InstallCommandHandler_ServiceHostPackageNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Command is not implemented..
+        /// </summary>
+        internal static string NotImplemented {
+            get {
+                return ResourceManager.GetString("NotImplemented", resourceCulture);
             }
         }
         

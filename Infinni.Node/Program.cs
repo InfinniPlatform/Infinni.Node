@@ -5,9 +5,9 @@ using System.Linq;
 using CommandLine;
 
 using Infinni.Node.CommandHandlers;
+using Infinni.Node.Logging;
 using Infinni.Node.Packaging;
 using Infinni.Node.Services;
-using Infinni.NodeWorker.Logging;
 
 namespace Infinni.Node
 {
