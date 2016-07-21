@@ -19,6 +19,13 @@ namespace Infinni.Node.CommandHandlers
         private const string InfinniPlatformSdk = "InfinniPlatform.Sdk";
         private const string InfinniPlatformServiceHost = "Infinni.NodeWorker";
 
+        private const string AppExtensionConfig = "AppExtension.json";
+        private const string AppCommonConfig = "AppCommon.json";
+        private const string AppLogConfig = "AppLog.config";
+
+        private const string AppDirectory = "app";
+        private const string PlatformDirectory = "platform";
+
 
         public InstallCommandHandler(IPackageRepositoryManagerFactory packageRepositoryFactory,
                                      IInstallDirectoryManager installDirectory,
@@ -160,22 +167,29 @@ namespace Infinni.Node.CommandHandlers
 
         private Task CopyAppFiles(InstallCommandContext context)
         {
-            _installDirectory.CopyFiles(context.AppInstallation, context.AppPackageContent, "app");
-            _installDirectory.CopyFiles(context.AppInstallation, context.PlatformPackageContent, "platform");
+            _installDirectory.CopyFiles(context.AppInstallation, context.AppPackageContent, AppDirectory);
+            _installDirectory.CopyFiles(context.AppInstallation, context.PlatformPackageContent, PlatformDirectory);
             _installDirectory.CopyFiles(context.AppInstallation, context.ServiceHostPackageContent, "");
 
-            var appExtensionConfig = context.AppPackageContent.Lib.FirstOrDefault(i => string.Equals(i.InstallPath, "AppExtension.json"));
+            var appExtensionConfig = context.AppPackageContent.Lib.FirstOrDefault(i => string.Equals(i.InstallPath, AppExtensionConfig));
 
             if (appExtensionConfig != null)
             {
                 _installDirectory.CopyFile(context.AppInstallation, appExtensionConfig, "");
             }
 
-            var appCommonConfig = context.PlatformPackageContent.Lib.FirstOrDefault(i => string.Equals(i.InstallPath, "AppCommon.json"));
+            var appCommonConfig = context.PlatformPackageContent.Lib.FirstOrDefault(i => string.Equals(i.InstallPath, AppCommonConfig));
 
             if (appCommonConfig != null)
             {
                 _installDirectory.CopyFile(context.AppInstallation, appCommonConfig, "");
+            }
+
+            var appLogConfig = context.PlatformPackageContent.Lib.FirstOrDefault(i => string.Equals(i.InstallPath, AppLogConfig));
+
+            if (appLogConfig != null)
+            {
+                _installDirectory.CopyFile(context.AppInstallation, appLogConfig, "");
             }
 
             return AsyncHelper.EmptyTask;

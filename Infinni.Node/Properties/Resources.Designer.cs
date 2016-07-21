@@ -115,7 +115,7 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The application package &apos;{0}&apos; not found..
+        ///   Looks up a localized string similar to The application package &apos;{0}&apos; not found. Probably it is a prerelease..
         /// </summary>
         internal static string InstallCommandHandler_AppPackageNotFound {
             get {
@@ -187,7 +187,7 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The platform package &apos;{0}&apos; not found..
+        ///   Looks up a localized string similar to The platform package &apos;{0}&apos; not found. Probably it is a prerelease..
         /// </summary>
         internal static string InstallCommandHandler_PlatformPackageNotFound {
             get {
@@ -205,7 +205,7 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The service host package &apos;{0}&apos; not found..
+        ///   Looks up a localized string similar to The service host package &apos;{0}&apos; not found. Probably it is a prerelease..
         /// </summary>
         internal static string InstallCommandHandler_ServiceHostPackageNotFound {
             get {
@@ -223,7 +223,7 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package &apos;{0}&apos; not found..
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; not found. Probably it is a prerelease..
         /// </summary>
         internal static string PackageNotFound {
             get {

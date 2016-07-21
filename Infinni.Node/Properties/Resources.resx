@@ -142,7 +142,7 @@
     <value>The application instance '{0}' already installed.</value>
   </data>
   <data name="InstallCommandHandler_AppPackageNotFound" xml:space="preserve">
-    <value>The application package '{0}' not found.</value>
+    <value>The application package '{0}' not found. Probably it is a prerelease.</value>
   </data>
   <data name="InstallCommandHandler_CheckAppInstallation" xml:space="preserve">
     <value>Ckeck existing installations</value>
@@ -163,13 +163,13 @@
     <value>Install the service of the application</value>
   </data>
   <data name="InstallCommandHandler_PlatformPackageNotFound" xml:space="preserve">
-    <value>The platform package '{0}' not found.</value>
+    <value>The platform package '{0}' not found. Probably it is a prerelease.</value>
   </data>
   <data name="InstallCommandHandler_SdkDependencyNotFound" xml:space="preserve">
     <value>The application package '{0}' does not contain dependency on InfinniPlatform.Sdk.</value>
   </data>
   <data name="PackageNotFound" xml:space="preserve">
-    <value>Package '{0}' not found.</value>
+    <value>Package '{0}' not found. Probably it is a prerelease.</value>
   </data>
   <data name="RollbackStageIsCompletedWithErrors" xml:space="preserve">
     <value>Rollback stage '{0}' is completed with errors: '{1}'.</value>
@@ -232,6 +232,6 @@
     <value>Install the service host package</value>
   </data>
   <data name="InstallCommandHandler_ServiceHostPackageNotFound" xml:space="preserve">
-    <value>The service host package '{0}' not found.</value>
+    <value>The service host package '{0}' not found. Probably it is a prerelease.</value>
   </data>
 </root>
