@@ -95,6 +95,7 @@
 				foreach ($projectReference in $projectReferences)
 				{
 					$projectNuspec = $projectNuspec + "            <dependency id=""$projectReference"" version=""[$version]"" />`r`n"
+					$projectRefs += "$projectReference.$version\lib\$framework\$projectReference.dll"
 				}
 			}
 
@@ -117,8 +118,6 @@
 			}
 
 			# Add resources for en-US
-
-			$projectResourcesEn = $projectXml.Project.ItemGroup.EmbeddedResource.Include | Where { $_ -like '*.en-US.*' }
 
 			if (($projectXml.Project.ItemGroup.EmbeddedResource.Include | Where { $_ -like '*.en-US.*' }).Count -gt 0)
 			{

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
-using Infinni.NodeWorker.Logging;
 using Infinni.NodeWorker.Services;
 
 using Topshelf;
@@ -10,9 +10,6 @@ namespace Infinni.NodeWorker
 {
     public class Program
     {
-        private const int DefaultTimeoutSec = 5 * 60;
-
-
         public static int Main()
         {
             /* Вся логика метода Main() находится в отдельных методах, чтобы JIT-компиляция Main()
@@ -39,59 +36,88 @@ namespace Infinni.NodeWorker
 
         private static int RunServiceHost()
         {
-            Log.Default.Info(Environment.CommandLine);
+            Console.WriteLine(Environment.CommandLine);
 
             var result = HostFactory.Run(config =>
-            {
-                config.UseLog4Net();
+                                         {
+                                             var parameters = config.SelectPlatform(i => i
+                                                 .AddStringParameter("packageId")
+                                                 .AddStringParameter("packageVersion")
+                                                 .AddStringParameter("packageInstance")
+                                                 .AddStringParameter("packageDirectory")
+                                                 .AddStringParameter("packageTimeout"));
 
-                var parameters = config.SelectPlatform(i => i
-                    .AddStringParameter("packageId")
-                    .AddStringParameter("packageVersion")
-                    .AddStringParameter("packageInstance")
-                    .AddStringParameter("packageDirectory")
-                    .AddStringParameter("packageTimeout"));
+                                             var serviceOptions = ParseServiceOptions(parameters);
 
-                var serviceOptions = ParseServiceOptions(parameters);
-                var serviceTimeout = TimeSpan.FromSeconds(serviceOptions.PackageTimeout ?? DefaultTimeoutSec);
+                                             Directory.SetCurrentDirectory(serviceOptions.PackageDirectory);
 
-                config.SetStartTimeout(serviceTimeout);
-                config.SetStopTimeout(serviceTimeout);
+                                             var serviceTimeout = TimeSpan.MaxValue;
 
-                config.Service<AppServiceHost>(s =>
-                {
-                    s.ConstructUsing(hostSettings =>
-                    {
-                        var instance = new AppServiceHost();
-                        return instance;
-                    });
+                                             if (serviceOptions.PackageTimeout != null)
+                                             {
+                                                 serviceTimeout = TimeSpan.FromSeconds(serviceOptions.PackageTimeout.Value);
+                                                 config.SetStartTimeout(serviceTimeout);
+                                                 config.SetStopTimeout(serviceTimeout);
+                                             }
 
-                    s.WhenStarted((instance, hostControl) =>
-                    {
-                        instance.Start(serviceTimeout);
-                        return true;
-                    });
+                                             config.Service<AppServiceHost>(s =>
+                                                                            {
+                                                                                s.ConstructUsing(hostSettings =>
+                                                                                                 {
+                                                                                                     try
+                                                                                                     {
+                                                                                                         var instance = new AppServiceHost();
+                                                                                                         return instance;
+                                                                                                     }
+                                                                                                     catch (Exception exception)
+                                                                                                     {
+                                                                                                         Console.WriteLine(exception);
+                                                                                                         throw;
+                                                                                                     }
+                                                                                                 });
 
-                    s.WhenStopped((instance, hostControl) =>
-                    {
-                        instance.Stop(serviceTimeout);
-                        return true;
-                    });
-                });
+                                                                                s.WhenStarted((instance, hostControl) =>
+                                                                                              {
+                                                                                                  try
+                                                                                                  {
+                                                                                                      instance.Start(serviceTimeout);
+                                                                                                      return true;
+                                                                                                  }
+                                                                                                  catch (Exception exception)
+                                                                                                  {
+                                                                                                      Console.WriteLine(exception);
+                                                                                                      throw;
+                                                                                                  }
+                                                                                              });
 
-                var serviceName = GetServiceName(serviceOptions);
+                                                                                s.WhenStopped((instance, hostControl) =>
+                                                                                              {
+                                                                                                  try
+                                                                                                  {
+                                                                                                      instance.Stop(serviceTimeout);
+                                                                                                      return true;
+                                                                                                  }
+                                                                                                  catch (Exception exception)
+                                                                                                  {
+                                                                                                      Console.WriteLine(exception);
+                                                                                                      throw;
+                                                                                                  }
+                                                                                              });
+                                                                            });
 
-                config.SetServiceName(serviceName);
-                config.SetDisplayName(serviceName);
-                config.SetDescription(serviceName);
+                                             var serviceName = GetServiceName(serviceOptions);
 
-                var serviceInstance = serviceOptions.PackageInstance;
+                                             config.SetServiceName(serviceName);
+                                             config.SetDisplayName(serviceName);
+                                             config.SetDescription(serviceName);
 
-                if (!string.IsNullOrWhiteSpace(serviceInstance))
-                {
-                    config.SetInstanceName(serviceInstance);
-                }
-            });
+                                             var serviceInstance = serviceOptions.PackageInstance;
+
+                                             if (!string.IsNullOrWhiteSpace(serviceInstance))
+                                             {
+                                                 config.SetInstanceName(serviceInstance);
+                                             }
+                                         });
 
             return (result == TopshelfExitCode.Ok) ? 0 : (int)result;
         }
@@ -138,7 +164,7 @@ namespace Infinni.NodeWorker
 
         private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            Log.Default.Fatal(e.ExceptionObject);
+            Console.WriteLine(e.ExceptionObject);
         }
     }
 }
