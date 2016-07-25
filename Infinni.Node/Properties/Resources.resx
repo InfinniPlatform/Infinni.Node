@@ -235,6 +235,12 @@
     <value>The service host package '{0}' not found. Probably it is a prerelease.</value>
   </data>
   <data name="InstallDirectoryOfPackageNotFound" xml:space="preserve">
-    <value>Install directory of package '{0}' not found.</value>
+    <value>Install directory of the package '{0}' not found.</value>
+  </data>
+  <data name="CannotDeletePackageDirectory" xml:space="preserve">
+    <value>Cannot delete the package directory '{0}'.</value>
+  </data>
+  <data name="AttemptToDeletePackageDirectoryHasCompletedWithError" xml:space="preserve">
+    <value>Attempt #{0} to delete the package directory '{1}' has completed with error: '{2}'.</value>
   </data>
 </root>

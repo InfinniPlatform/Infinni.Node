@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 using Infinni.Node.Properties;
 using Infinni.Node.Settings;
@@ -39,9 +40,44 @@ namespace Infinni.Node.Packaging
 
         public void Delete(InstallDirectoryItem appInstallation)
         {
-            if (appInstallation.Directory.Exists)
+            // Есть вероятность, что при удалении каталога установки его файлы
+            // еще используются, поскольку служба останавливается асинхронно.
+            // Пока более интеллектуального способа не найдено, производится
+            // несколько попыток удаления каталога с интервалом в 1 секунду.
+
+            Exception exception = null;
+
+            // Максимальный таймаут равен 2 минуты (24 попытки по 5 секунд каждая)
+            const int attempts = 24;
+            const int timeout = 5000;
+
+            for (var i = 0; i < attempts; i++)
             {
-                appInstallation.Directory.Delete(true);
+                if (exception != null)
+                {
+                    Thread.Sleep(timeout);
+                }
+
+                try
+                {
+                    if (appInstallation.Directory.Exists)
+                    {
+                        appInstallation.Directory.Delete(true);
+                    }
+
+                    return;
+                }
+                catch (Exception e)
+                {
+                    exception = e;
+
+                    _log.InfoFormat(Resources.AttemptToDeletePackageDirectoryHasCompletedWithError, i + 1, appInstallation, e.Message);
+                }
+            }
+
+            if (exception != null)
+            {
+                throw new InvalidOperationException(string.Format(Resources.CannotDeletePackageDirectory, appInstallation), exception);
             }
         }
 

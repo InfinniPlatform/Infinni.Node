@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 using Infinni.Node.CommandOptions;
 using Infinni.Node.Packaging;
@@ -74,7 +75,14 @@ namespace Infinni.Node.CommandHandlers
             {
                 _log.InfoFormat(Resources.UninstallCommandHandler_StartDeleteAppFiles, appInstallation);
 
-                _installDirectory.Delete(appInstallation);
+                try
+                {
+                    _installDirectory.Delete(appInstallation);
+                }
+                catch (InvalidOperationException exception)
+                {
+                    throw new CommandHandlerException(exception.Message, exception);
+                }
             }
 
             return AsyncHelper.EmptyTask;

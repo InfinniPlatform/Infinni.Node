@@ -61,6 +61,24 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Attempt #{0} to delete the package directory &apos;{1}&apos; has completed with error: &apos;{2}&apos;..
+        /// </summary>
+        internal static string AttemptToDeletePackageDirectoryHasCompletedWithError {
+            get {
+                return ResourceManager.GetString("AttemptToDeletePackageDirectoryHasCompletedWithError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot delete the package directory &apos;{0}&apos;..
+        /// </summary>
+        internal static string CannotDeletePackageDirectory {
+            get {
+                return ResourceManager.GetString("CannotDeletePackageDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Executing stage &apos;{0}&apos; is completed with errors: &apos;{1}&apos;..
         /// </summary>
         internal static string ExecutingStageIsCompletedWithErrors {
@@ -214,7 +232,7 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Install directory of package &apos;{0}&apos; not found..
+        ///   Looks up a localized string similar to Install directory of the package &apos;{0}&apos; not found..
         /// </summary>
         internal static string InstallDirectoryOfPackageNotFound {
             get {
