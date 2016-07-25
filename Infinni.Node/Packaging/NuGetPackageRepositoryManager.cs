@@ -292,7 +292,16 @@ namespace Infinni.Node.Packaging
         {
             // Путь установленного пакета обычно имеет вид 'packages/MyPackage.1.0.0'
 
-            return Path.Combine(_packagesPath, $"{packageIdentity.Id}.{packageIdentity.Version}");
+            var nuGetVersion = packageIdentity.Version;
+
+            var packagePath = Path.Combine(_packagesPath, $"{packageIdentity.Id}.{nuGetVersion}");
+
+            if (!Directory.Exists(packagePath) && !nuGetVersion.IsPrerelease && nuGetVersion.Revision == 0)
+            {
+                packagePath += ".0";
+            }
+
+            return packagePath;
         }
     }
 }
