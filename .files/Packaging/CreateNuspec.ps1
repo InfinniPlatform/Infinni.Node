@@ -22,7 +22,7 @@
 		[String] $commitHash = '',
 
 		[Parameter(HelpMessage = ".NET version.")]
-		[String] $framework = 'net45'
+		[String] $framework = 'net452'
 	)
 
 	process
