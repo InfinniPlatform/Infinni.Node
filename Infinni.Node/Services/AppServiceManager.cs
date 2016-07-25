@@ -50,7 +50,7 @@ namespace Infinni.Node.Services
         {
             var workerServiceFile = Path.Combine(appInstallation.Directory.FullName, WorkerServiceFile);
             var workerServiceArguments = BuildServiceCommand(commandVerb, appInstallation, timeoutSeconds);
-            return MonoHelper.ExecuteProcess(workerServiceFile, workerServiceArguments);
+            return MonoHelper.ExecuteProcessAsync(workerServiceFile, workerServiceArguments);
         }
 
         private static string BuildServiceCommand(string commandVerb, InstallDirectoryItem appInstallation, int? timeoutSeconds)
