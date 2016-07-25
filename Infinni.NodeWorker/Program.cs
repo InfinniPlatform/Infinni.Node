@@ -40,6 +40,8 @@ namespace Infinni.NodeWorker
 
             var result = HostFactory.Run(config =>
                                          {
+                                             // Чтение параметров командной строки
+
                                              var parameters = config.SelectPlatform(i => i
                                                  .AddStringParameter("packageId")
                                                  .AddStringParameter("packageVersion")
@@ -49,7 +51,10 @@ namespace Infinni.NodeWorker
 
                                              var serviceOptions = ParseServiceOptions(parameters);
 
+                                             // Установка текущего каталога приложения
                                              Directory.SetCurrentDirectory(serviceOptions.PackageDirectory);
+
+                                             // Установка таймаута для запуска и остановки
 
                                              var serviceTimeout = TimeSpan.MaxValue;
 
@@ -62,6 +67,7 @@ namespace Infinni.NodeWorker
 
                                              config.Service<AppServiceHost>(s =>
                                                                             {
+                                                                                // Создание экземпляра приложения
                                                                                 s.ConstructUsing(hostSettings =>
                                                                                                  {
                                                                                                      try
@@ -76,6 +82,7 @@ namespace Infinni.NodeWorker
                                                                                                      }
                                                                                                  });
 
+                                                                                // Запуск экземпляра приложения
                                                                                 s.WhenStarted((instance, hostControl) =>
                                                                                               {
                                                                                                   try
@@ -90,6 +97,7 @@ namespace Infinni.NodeWorker
                                                                                                   }
                                                                                               });
 
+                                                                                // Остановка экземпляра приложения
                                                                                 s.WhenStopped((instance, hostControl) =>
                                                                                               {
                                                                                                   try
@@ -105,11 +113,14 @@ namespace Infinni.NodeWorker
                                                                                               });
                                                                             });
 
-                                             var serviceName = GetServiceName(serviceOptions);
+                                             // Установка имени службы
 
+                                             var serviceName = GetServiceName(serviceOptions);
                                              config.SetServiceName(serviceName);
                                              config.SetDisplayName(serviceName);
                                              config.SetDescription(serviceName);
+
+                                             // Установка экземпляра службы
 
                                              var serviceInstance = serviceOptions.PackageInstance;
 

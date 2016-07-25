@@ -234,4 +234,7 @@
   <data name="InstallCommandHandler_ServiceHostPackageNotFound" xml:space="preserve">
     <value>The service host package '{0}' not found. Probably it is a prerelease.</value>
   </data>
+  <data name="InstallDirectoryOfPackageNotFound" xml:space="preserve">
+    <value>Install directory of package '{0}' not found.</value>
+  </data>
 </root>

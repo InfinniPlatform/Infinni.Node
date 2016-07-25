@@ -296,12 +296,43 @@ namespace Infinni.Node.Packaging
 
             var packagePath = Path.Combine(_packagesPath, $"{packageIdentity.Id}.{nuGetVersion}");
 
-            if (!Directory.Exists(packagePath) && !nuGetVersion.IsPrerelease && nuGetVersion.Revision == 0)
+            if (Directory.Exists(packagePath))
             {
-                packagePath += ".0";
+                return packagePath;
             }
 
-            return packagePath;
+            // При установке пакета его версия берется из nuspec-файла, она же используется при формировании имени каталога установки.
+            // После этого формируется экземпляр NuGetVersion, который уже не содержит информацию об оригинальной строке версии в nuspec-файле.
+            // Следующий код связан с указанной ошибкой в библиотеке NuGet и предпринимает несколько попыток поиска каталога установки пакета.
+
+            if (nuGetVersion.Revision == 0 && !nuGetVersion.IsPrerelease && !nuGetVersion.HasMetadata)
+            {
+                // Каталог установки в формате 'packages/MyPackage.X.Y.Z.0'
+                packagePath = Path.Combine(_packagesPath, $"{packageIdentity.Id}.{nuGetVersion.Major}.{nuGetVersion.Minor}.{nuGetVersion.Patch}.0");
+
+                if (Directory.Exists(packagePath))
+                {
+                    return packagePath;
+                }
+
+                // Каталог установки в формате 'packages/MyPackage.X.Y.0'
+                packagePath = Path.Combine(_packagesPath, $"{packageIdentity.Id}.{nuGetVersion.Major}.{nuGetVersion.Minor}.{nuGetVersion.Patch}");
+
+                if (Directory.Exists(packagePath))
+                {
+                    return packagePath;
+                }
+
+                // Каталог установки в формате 'packages/MyPackage.X.0'
+                packagePath = Path.Combine(_packagesPath, $"{packageIdentity.Id}.{nuGetVersion.Major}.{nuGetVersion.Minor}");
+
+                if (Directory.Exists(packagePath))
+                {
+                    return packagePath;
+                }
+            }
+
+            throw new InvalidOperationException(string.Format(Properties.Resources.InstallDirectoryOfPackageNotFound, $"{packageIdentity.Id}.{nuGetVersion}"));
         }
     }
 }

@@ -214,6 +214,15 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Install directory of package &apos;{0}&apos; not found..
+        /// </summary>
+        internal static string InstallDirectoryOfPackageNotFound {
+            get {
+                return ResourceManager.GetString("InstallDirectoryOfPackageNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Command is not implemented..
         /// </summary>
         internal static string NotImplemented {
