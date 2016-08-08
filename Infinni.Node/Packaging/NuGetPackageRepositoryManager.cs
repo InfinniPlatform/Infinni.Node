@@ -280,7 +280,10 @@ namespace Infinni.Node.Packaging
 
                 return reader.GetLibItems()
                              .OrderBy(i => i.TargetFramework, NuGetFrameworkComparer)
-                             .FirstOrDefault(i => !i.TargetFramework.IsUnsupported && i.Items != null && i.Items.Any())?.TargetFramework;
+                             .FirstOrDefault(i => NuGetFrameworkComparer.Compare(i.TargetFramework, NuGetFramework.AnyFramework) != 0
+                                                  && !i.TargetFramework.IsUnsupported
+                                                  && i.Items != null
+                                                  && i.Items.Any())?.TargetFramework;
             }
         }
 
