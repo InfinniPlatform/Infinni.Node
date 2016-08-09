@@ -108,8 +108,8 @@ namespace Infinni.Node.Packaging
             var packageIdentity = new PackageIdentity(packageId, packageNuGetVersion);
 
             // Каталог для установки пакетов (каталог packages)
-            NuGetProject folderProject = new FolderNuGetProject(_packagesPath);
-
+            NuGetProject folderProject = new InfinniFolderNuGetProject(_packagesPath);
+            
             // Менеджер для управления пакетами
             var packageManager = new NuGetPackageManager(packageRepositoryProvider, settings, _packagesPath);
 
@@ -181,18 +181,7 @@ namespace Infinni.Node.Packaging
 
             using (var reader = new PackageFolderReader(packagePath))
             {
-                // Из пакета выбираются файлы с TargetFramework, который
-                // является наиболее новым и совместимым с указанным
-
-                var libItems = reader.GetLibItems()
-                                     .OrderByDescending(i => i.TargetFramework, NuGetFrameworkComparer)
-                                     .FirstOrDefault(i => NuGetFrameworkComparer.Compare(i.TargetFramework, targetFramework) <= 0
-                                                          && compatibilityProvider.IsCompatible(targetFramework, i.TargetFramework));
-
-                var contentItems = reader.GetContentItems()
-                                         .OrderByDescending(i => i.TargetFramework, NuGetFrameworkComparer)
-                                         .FirstOrDefault(i => NuGetFrameworkComparer.Compare(i.TargetFramework, targetFramework) <= 0
-                                                              && compatibilityProvider.IsCompatible(targetFramework, i.TargetFramework));
+                var libItems = GetCompatibleItems(reader, reader.GetLibItems().ToList(), targetFramework, compatibilityProvider);
 
                 if (libItems?.Items != null)
                 {
@@ -203,6 +192,8 @@ namespace Infinni.Node.Packaging
                     }
                 }
 
+                var contentItems = GetCompatibleItems(reader, reader.GetContentItems().ToList(), targetFramework, compatibilityProvider);
+
                 if (contentItems?.Items != null)
                 {
                     foreach (var item in contentItems.Items)
@@ -212,6 +203,39 @@ namespace Infinni.Node.Packaging
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Возвращает список совместимых элементов.
+        /// </summary>
+        /// <param name="reader">Интерфейс для чтения метаданных пакета.</param>
+        /// <param name="items">Список элементов для выборки.</param>
+        /// <param name="targetFramework">Версия совместимого фреймворка.</param>
+        /// <param name="compatibilityProvider">Провайдер для проверки совместимости фреймворков.</param>
+        private static FrameworkSpecificGroup GetCompatibleItems(PackageReaderBase reader,
+                                                                 IList<FrameworkSpecificGroup> items,
+                                                                 NuGetFramework targetFramework,
+                                                                 IFrameworkCompatibilityProvider compatibilityProvider)
+        {
+            // Из пакета выбираются файлы с TargetFramework, который
+            // является наиболее новым и совместимым с указанным
+
+            var compatibleItems = items
+                .OrderByDescending(i => i.TargetFramework, NuGetFrameworkComparer)
+                .FirstOrDefault(i => NuGetFrameworkComparer.Compare(i.TargetFramework, targetFramework) <= 0
+                                     && compatibilityProvider.IsCompatible(targetFramework, i.TargetFramework));
+
+            if (compatibleItems == null)
+            {
+                var portableFramework = reader.GetSupportedFrameworks().FirstOrDefault(i => string.Equals(i.Framework, ".NETPortable", StringComparison.OrdinalIgnoreCase));
+
+                if (portableFramework != null && compatibilityProvider.IsCompatible(targetFramework, portableFramework))
+                {
+                    compatibleItems = items.FirstOrDefault(i => NuGetFrameworkComparer.Compare(i.TargetFramework, portableFramework) == 0);
+                }
+            }
+
+            return compatibleItems;
         }
 
         /// <summary>

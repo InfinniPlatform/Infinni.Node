@@ -193,6 +193,7 @@
     <Compile Include="CommandOptions\UninstallCommandOptions.cs" />
     <Compile Include="Logging\Log.cs" />
     <Compile Include="Packaging\IInstallDirectoryManager.cs" />
+    <Compile Include="Packaging\InfinniFolderNuGetProject.cs" />
     <Compile Include="Packaging\InstallDirectoryItem.cs" />
     <Compile Include="Packaging\InstallDirectoryManager.cs" />
     <Compile Include="Packaging\IPackageRepositoryManager.cs" />
