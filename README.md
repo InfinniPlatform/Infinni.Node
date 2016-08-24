@@ -2,6 +2,23 @@
 
 Утилита для управления приложениями в кластере InfinniPlatform.
 
+## Installation
+
+Установка Infinni.Node выполняется с помощью [скрипта](http://infinniplatform.readthedocs.io/ru/latest/_downloads/Infinni_Node_Install.bat).
+
+По умолчанию устанавливается последняя версия утилиты:
+
+```bash
+> Infinni_Node_Install.bat # устанавливает последнюю версию утилиты Infinni.Node
+```
+Однако можно установить любую [доступную версию утилиты](http://nuget.infinnity.ru/packages/Infinni.Node/):
+
+```bash
+> Infinni_Node_Install.bat 1.2.0.19-master # устанавливает версию '1.2.0.19-master' утилиты Infinni.Node
+```
+
+Подробнее см. [документацию InfinniPlatform](http://infinniplatform.readthedocs.io/ru/latest/00-getting-started/index.html#id3).
+
 ## Getting Started
 
 Установка приложения:
