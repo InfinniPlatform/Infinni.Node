@@ -26,6 +26,13 @@ namespace Infinni.Node.Services
         /// </summary>
         /// <param name="appInstallation">Сведения об установке приложения.</param>
         /// <param name="timeoutSeconds">Таймаут выполнения операции (в секундах).</param>
+        Task Init(InstallDirectoryItem appInstallation, int? timeoutSeconds = null);
+
+        /// <summary>
+        /// Запускает сервис приложения.
+        /// </summary>
+        /// <param name="appInstallation">Сведения об установке приложения.</param>
+        /// <param name="timeoutSeconds">Таймаут выполнения операции (в секундах).</param>
         Task Start(InstallDirectoryItem appInstallation, int? timeoutSeconds = null);
 
         /// <summary>

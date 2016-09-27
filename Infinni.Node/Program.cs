@@ -16,6 +16,7 @@ namespace Infinni.Node
         private static readonly CommandRunner CommandRunner = new CommandRunner(Log.Default)
             .RegisterCommand(() => new InstallCommandHandler(new NuGetPackageRepositoryManagerFactory(new NuGetLogger(Log.Default)), new InstallDirectoryManager(Log.Default), new AppServiceManager(), Log.Default))
             .RegisterCommand(() => new UninstallCommandHandler(new InstallDirectoryManager(Log.Default), new AppServiceManager(), Log.Default))
+            .RegisterCommand(() => new InitCommandHandler(new InstallDirectoryManager(Log.Default), new AppServiceManager(), Log.Default))
             .RegisterCommand(() => new StartCommandHandler(new InstallDirectoryManager(Log.Default), new AppServiceManager(), Log.Default))
             .RegisterCommand(() => new StopCommandHandler(new InstallDirectoryManager(Log.Default), new AppServiceManager(), Log.Default))
             .RegisterCommand(() => new StatusCommandHandler(new InstallDirectoryManager(Log.Default), new AppServiceManager(), Log.Default));

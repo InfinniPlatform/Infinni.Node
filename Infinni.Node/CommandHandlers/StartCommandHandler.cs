@@ -37,8 +37,7 @@ namespace Infinni.Node.CommandHandlers
 
             var commandTransaction = new CommandTransactionManager<StartCommandContext>(_log)
                 .Stage(Resources.StartCommandHandler_FindAppInstallations, FindAppInstallations)
-                .Stage(Resources.StartCommandHandler_StartAppServices, StartAppServices)
-                ;
+                .Stage(Resources.StartCommandHandler_StartAppServices, StartAppServices);
 
             await commandTransaction.Execute(commandContext);
         }

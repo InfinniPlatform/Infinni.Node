@@ -177,6 +177,8 @@
     <Compile Include="CommandHandlers\AsyncHelper.cs" />
     <Compile Include="CommandHandlers\CommandHandlerException.cs" />
     <Compile Include="CommandHandlers\CommandHandlerBase.cs" />
+    <Compile Include="CommandHandlers\InitCommandHandler.cs" />
+    <Compile Include="CommandOptions\InitCommandOptions.cs" />
     <Compile Include="Packaging\CommonHelper.cs" />
     <Compile Include="CommandHandlers\ICommandHandler.cs" />
     <Compile Include="CommandHandlers\InstallCommandHandler.cs" />
@@ -228,6 +230,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

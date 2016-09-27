@@ -124,6 +124,42 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Can not find any applications to initialize..
+        /// </summary>
+        internal static string InitCommandHandler_CanNotFindAnyApplicationsToStart {
+            get {
+                return ResourceManager.GetString("InitCommandHandler_CanNotFindAnyApplicationsToStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Find existing installations.
+        /// </summary>
+        internal static string InitCommandHandler_FindAppInstallations {
+            get {
+                return ResourceManager.GetString("InitCommandHandler_FindAppInstallations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start application initialization.
+        /// </summary>
+        internal static string InitCommandHandler_StartAppInitialization {
+            get {
+                return ResourceManager.GetString("InitCommandHandler_StartAppInitialization", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Initialization started..
+        /// </summary>
+        internal static string InitCommandHandler_StartInitialization {
+            get {
+                return ResourceManager.GetString("InitCommandHandler_StartInitialization", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The application instance &apos;{0}&apos; already installed..
         /// </summary>
         internal static string InstallCommandHandler_AppAlreadyInstalled {
@@ -363,6 +399,15 @@ namespace Infinni.Node.Properties {
         internal static string StopCommandHandler_FindAppInstallations {
             get {
                 return ResourceManager.GetString("StopCommandHandler_FindAppInstallations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stop the service of the application &apos;{0}&apos;..
+        /// </summary>
+        internal static string StopCommandHandler_StopAppService {
+            get {
+                return ResourceManager.GetString("StopCommandHandler_StopAppService", resourceCulture);
             }
         }
         

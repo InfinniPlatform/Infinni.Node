@@ -24,6 +24,21 @@ namespace Infinni.NodeWorker.Services
             return _host.Value.GetStatus();
         }
 
+        public void Init(TimeSpan timeout)
+        {
+            if (!_started)
+            {
+                lock (_syncStarted)
+                {
+                    if (!_started)
+                    {
+                        _host.Value.Init(timeout);
+                        _started = true;
+                    }
+                }
+            }
+        }
+
         public void Start(TimeSpan timeout)
         {
             if (!_started)

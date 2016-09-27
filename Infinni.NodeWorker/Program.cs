@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 using Infinni.NodeWorker.Services;
@@ -12,6 +13,7 @@ namespace Infinni.NodeWorker
     {
         public static int Main()
         {
+            Debugger.Launch();
             /* Вся логика метода Main() находится в отдельных методах, чтобы JIT-компиляция Main()
              * прошла без загрузки дополнительных сборок, поскольку до этого момента нужно успеть
              * установить свою собственную логику загрузки сборок.
@@ -50,7 +52,7 @@ namespace Infinni.NodeWorker
                                                  .AddStringParameter("packageTimeout"));
 
                                              var serviceOptions = ParseServiceOptions(parameters);
-
+                                             
                                              // Установка текущего каталога приложения
                                              Directory.SetCurrentDirectory(serviceOptions.PackageDirectory);
 
@@ -65,6 +67,8 @@ namespace Infinni.NodeWorker
                                                  config.SetStopTimeout(serviceTimeout);
                                              }
 
+                                             config.AddCommandLineDefinition("init", Console.WriteLine);
+                                             config.ApplyCommandLine();
                                              config.Service<AppServiceHost>(s =>
                                                                             {
                                                                                 // Создание экземпляра приложения
@@ -81,6 +85,8 @@ namespace Infinni.NodeWorker
                                                                                                          throw;
                                                                                                      }
                                                                                                  });
+
+                                                                                s.WhenCustomCommandReceived(null);
 
                                                                                 // Запуск экземпляра приложения
                                                                                 s.WhenStarted((instance, hostControl) =>

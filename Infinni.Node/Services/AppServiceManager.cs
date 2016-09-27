@@ -16,6 +16,7 @@ namespace Infinni.Node.Services
         private const string WorkerServiceFile = "Infinni.NodeWorker.exe";
         private const string WorkerServiceInstallVerb = "install";
         private const string WorkerServiceUninstallVerb = "uninstall";
+        private const string WorkerServiceInitVerb = "init";
         private const string WorkerServiceStartVerb = "start";
         private const string WorkerServiceStopVerb = "stop";
 
@@ -28,6 +29,11 @@ namespace Infinni.Node.Services
         public Task Uninstall(InstallDirectoryItem appInstallation)
         {
             return ExecuteWorkerService(WorkerServiceUninstallVerb, appInstallation);
+        }
+
+        public Task Init(InstallDirectoryItem appInstallation, int? timeoutSeconds = null)
+        {
+            return ExecuteWorkerService(WorkerServiceInitVerb, appInstallation, timeoutSeconds);
         }
 
         public Task Start(InstallDirectoryItem appInstallation, int? timeoutSeconds = null)

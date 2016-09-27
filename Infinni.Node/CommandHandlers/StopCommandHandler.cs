@@ -59,7 +59,7 @@ namespace Infinni.Node.CommandHandlers
         {
             foreach (var appInstallation in context.AppInstallations)
             {
-                _log.InfoFormat(Resources.StartCommandHandler_StartAppService, appInstallation);
+                _log.InfoFormat(Resources.StopCommandHandler_StopAppService, appInstallation);
 
                 // Остановка рабочего процесса приложения
                 await _appService.Stop(appInstallation, context.CommandOptions.Timeout);

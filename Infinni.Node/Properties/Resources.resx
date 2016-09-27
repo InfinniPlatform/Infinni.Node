@@ -243,4 +243,19 @@
   <data name="AttemptToDeletePackageDirectoryHasCompletedWithError" xml:space="preserve">
     <value>Attempt #{0} to delete the package directory '{1}' has completed with error: '{2}'.</value>
   </data>
+  <data name="InitCommandHandler_FindAppInstallations" xml:space="preserve">
+    <value>Find existing installations</value>
+  </data>
+  <data name="InitCommandHandler_StartAppInitialization" xml:space="preserve">
+    <value>Start application initialization</value>
+  </data>
+  <data name="InitCommandHandler_CanNotFindAnyApplicationsToStart" xml:space="preserve">
+    <value>Can not find any applications to initialize.</value>
+  </data>
+  <data name="InitCommandHandler_StartInitialization" xml:space="preserve">
+    <value>Initialization started.</value>
+  </data>
+  <data name="StopCommandHandler_StopAppService" xml:space="preserve">
+    <value>Stop the service of the application '{0}'.</value>
+  </data>
 </root>
