@@ -29,5 +29,10 @@
         /// Таймаут выполнения операции.
         /// </summary>
         public int? PackageTimeout { get; set; }
+
+        /// <summary>
+        /// Дополнительные параметры запуска приложения.
+        /// </summary>
+        public string StartOptions { get; set; }
     }
 }

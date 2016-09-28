@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 
 using Infinni.NodeWorker.Services;
 
 using Topshelf;
+using Topshelf.HostConfigurators;
 
 namespace Infinni.NodeWorker
 {
@@ -13,7 +13,6 @@ namespace Infinni.NodeWorker
     {
         public static int Main()
         {
-            Debugger.Launch();
             /* Вся логика метода Main() находится в отдельных методах, чтобы JIT-компиляция Main()
              * прошла без загрузки дополнительных сборок, поскольку до этого момента нужно успеть
              * установить свою собственную логику загрузки сборок.
@@ -28,128 +27,144 @@ namespace Infinni.NodeWorker
             return RunServiceHost();
         }
 
-
         private static void InitializeAssemblyLoadContext()
         {
             var context = new DirectoryAssemblyLoadContext();
             DirectoryAssemblyLoadContext.InitializeDefaultContext(context);
         }
 
-
         private static int RunServiceHost()
         {
             Console.WriteLine(Environment.CommandLine);
 
-            var result = HostFactory.Run(config =>
-                                         {
-                                             // Чтение параметров командной строки
+            AppServiceOptions serviceOptions = null;
 
-                                             var parameters = config.SelectPlatform(i => i
-                                                 .AddStringParameter("packageId")
-                                                 .AddStringParameter("packageVersion")
-                                                 .AddStringParameter("packageInstance")
-                                                 .AddStringParameter("packageDirectory")
-                                                 .AddStringParameter("packageTimeout"));
+            var topshelfHost = HostFactory.New(config => { CreateHost(config, out serviceOptions); });
 
-                                             var serviceOptions = ParseServiceOptions(parameters);
-                                             
-                                             // Установка текущего каталога приложения
-                                             Directory.SetCurrentDirectory(serviceOptions.PackageDirectory);
+            // Инициализация окружения для приложения
 
-                                             // Установка таймаута для запуска и остановки
+            if (serviceOptions.StartOptions.Contains("init"))
+            {
+                var initAppServiceHost = new AppServiceHost();
+                initAppServiceHost.Init(TimeSpan.FromSeconds(60));
+            }
 
-                                             var serviceTimeout = TimeSpan.MaxValue;
+            // Запуск службы приложения
 
-                                             if (serviceOptions.PackageTimeout != null)
-                                             {
-                                                 serviceTimeout = TimeSpan.FromSeconds(serviceOptions.PackageTimeout.Value);
-                                                 config.SetStartTimeout(serviceTimeout);
-                                                 config.SetStopTimeout(serviceTimeout);
-                                             }
+            if (string.IsNullOrWhiteSpace(serviceOptions.StartOptions) ||
+                serviceOptions.StartOptions.Contains("start"))
+            {
+                var topshelfExitCode = topshelfHost.Run();
+                return topshelfExitCode == TopshelfExitCode.Ok
+                           ? (int)TopshelfExitCode.Ok
+                           : (int)topshelfExitCode;
+            }
 
-                                             config.AddCommandLineDefinition("init", Console.WriteLine);
-                                             config.ApplyCommandLine();
-                                             config.Service<AppServiceHost>(s =>
-                                                                            {
-                                                                                // Создание экземпляра приложения
-                                                                                s.ConstructUsing(hostSettings =>
-                                                                                                 {
-                                                                                                     try
-                                                                                                     {
-                                                                                                         var instance = new AppServiceHost();
-                                                                                                         return instance;
-                                                                                                     }
-                                                                                                     catch (Exception exception)
-                                                                                                     {
-                                                                                                         Console.WriteLine(exception);
-                                                                                                         throw;
-                                                                                                     }
-                                                                                                 });
-
-                                                                                s.WhenCustomCommandReceived(null);
-
-                                                                                // Запуск экземпляра приложения
-                                                                                s.WhenStarted((instance, hostControl) =>
-                                                                                              {
-                                                                                                  try
-                                                                                                  {
-                                                                                                      instance.Start(serviceTimeout);
-                                                                                                      return true;
-                                                                                                  }
-                                                                                                  catch (Exception exception)
-                                                                                                  {
-                                                                                                      Console.WriteLine(exception);
-                                                                                                      throw;
-                                                                                                  }
-                                                                                              });
-
-                                                                                // Остановка экземпляра приложения
-                                                                                s.WhenStopped((instance, hostControl) =>
-                                                                                              {
-                                                                                                  try
-                                                                                                  {
-                                                                                                      instance.Stop(serviceTimeout);
-                                                                                                      return true;
-                                                                                                  }
-                                                                                                  catch (Exception exception)
-                                                                                                  {
-                                                                                                      Console.WriteLine(exception);
-                                                                                                      throw;
-                                                                                                  }
-                                                                                              });
-                                                                            });
-
-                                             // Установка имени службы
-
-                                             var serviceName = GetServiceName(serviceOptions);
-                                             config.SetServiceName(serviceName);
-                                             config.SetDisplayName(serviceName);
-                                             config.SetDescription(serviceName);
-
-                                             // Установка экземпляра службы
-
-                                             var serviceInstance = serviceOptions.PackageInstance;
-
-                                             if (!string.IsNullOrWhiteSpace(serviceInstance))
-                                             {
-                                                 config.SetInstanceName(serviceInstance);
-                                             }
-                                         });
-
-            return (result == TopshelfExitCode.Ok) ? 0 : (int)result;
+            return (int)TopshelfExitCode.Ok;
         }
 
+        private static void CreateHost(HostConfigurator config, out AppServiceOptions serviceOptions)
+        {
+            // Чтение параметров командной строки
+            var parameters = config.SelectPlatform(i => i.AddStringParameter("packageId")
+                                                         .AddStringParameter("packageVersion")
+                                                         .AddStringParameter("packageInstance")
+                                                         .AddStringParameter("packageDirectory")
+                                                         .AddStringParameter("packageTimeout")
+                                                         .AddStringParameter("startOptions"));
+
+            serviceOptions = ParseServiceOptions(parameters);
+
+            // Установка текущего каталога приложения
+            Directory.SetCurrentDirectory(serviceOptions.PackageDirectory);
+
+            // Установка таймаута для запуска и остановки
+
+            var serviceTimeout = TimeSpan.MaxValue;
+
+            if (serviceOptions.PackageTimeout != null)
+            {
+                serviceTimeout = TimeSpan.FromSeconds(serviceOptions.PackageTimeout.Value);
+                config.SetStartTimeout(serviceTimeout);
+                config.SetStopTimeout(serviceTimeout);
+            }
+
+            config.Service<AppServiceHost>(s =>
+                                           {
+                                               // Создание экземпляра приложения
+                                               s.ConstructUsing(hostSettings =>
+                                                                {
+                                                                    try
+                                                                    {
+                                                                        var instance = new AppServiceHost();
+                                                                        return instance;
+                                                                    }
+                                                                    catch (Exception exception)
+                                                                    {
+                                                                        Console.WriteLine(exception);
+                                                                        throw;
+                                                                    }
+                                                                });
+
+                                               // Запуск экземпляра приложения
+                                               s.WhenStarted((instance, hostControl) =>
+                                                             {
+                                                                 try
+                                                                 {
+                                                                     instance.Start(serviceTimeout);
+                                                                     return true;
+                                                                 }
+                                                                 catch (Exception exception)
+                                                                 {
+                                                                     Console.WriteLine(exception);
+                                                                     throw;
+                                                                 }
+                                                             });
+
+                                               // Остановка экземпляра приложения
+                                               s.WhenStopped((instance, hostControl) =>
+                                                             {
+                                                                 try
+                                                                 {
+                                                                     instance.Stop(serviceTimeout);
+                                                                     return true;
+                                                                 }
+                                                                 catch (Exception exception)
+                                                                 {
+                                                                     Console.WriteLine(exception);
+                                                                     throw;
+                                                                 }
+                                                             });
+                                           });
+
+            // Установка имени службы
+
+            var serviceName = GetServiceName(serviceOptions);
+            config.SetServiceName(serviceName);
+            config.SetDisplayName(serviceName);
+            config.SetDescription(serviceName);
+
+            // Установка экземпляра службы
+
+            var serviceInstance = serviceOptions.PackageInstance;
+
+            if (!string.IsNullOrWhiteSpace(serviceInstance))
+            {
+                config.SetInstanceName(serviceInstance);
+            }
+        }
 
         private static AppServiceOptions ParseServiceOptions(IDictionary<string, object> parameters)
         {
             return new AppServiceOptions
-            {
-                PackageId = GetParameterValue(parameters, "packageId", "Infinni.NodeWorker"),
-                PackageVersion = GetParameterValue(parameters, "packageVersion", "1.0.0"),
-                PackageInstance = GetParameterValue(parameters, "packageInstance"),
-                PackageDirectory = GetParameterValue(parameters, "packageDirectory"),
-                PackageTimeout = GetPackageTimeout(GetParameterValue(parameters, "packageTimeout"))
-            };
+                   {
+                       PackageId = GetParameterValue(parameters, "packageId", "Infinni.NodeWorker"),
+                       PackageVersion = GetParameterValue(parameters, "packageVersion", "1.0.0"),
+                       PackageInstance = GetParameterValue(parameters, "packageInstance"),
+                       PackageDirectory = GetParameterValue(parameters, "packageDirectory"),
+                       PackageTimeout = GetPackageTimeout(GetParameterValue(parameters, "packageTimeout")),
+                       StartOptions = GetParameterValue(parameters, "startOptions", "")
+                   };
         }
 
         private static string GetParameterValue(IDictionary<string, object> parameters, string parameterName, string defaultValue = null)
@@ -168,16 +183,15 @@ namespace Infinni.NodeWorker
         {
             int packageTimeout;
 
-            return (!string.IsNullOrWhiteSpace(value) && int.TryParse(value.Trim(), out packageTimeout) && packageTimeout >= 0)
-                ? packageTimeout
-                : default(int?);
+            return !string.IsNullOrWhiteSpace(value) && int.TryParse(value.Trim(), out packageTimeout) && (packageTimeout >= 0)
+                       ? packageTimeout
+                       : default(int?);
         }
 
         private static string GetServiceName(AppServiceOptions serviceOptions)
         {
             return $"{serviceOptions.PackageId}.{serviceOptions.PackageVersion}";
         }
-
 
         private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {

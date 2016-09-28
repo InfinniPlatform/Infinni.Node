@@ -16,9 +16,10 @@ namespace Infinni.Node.Services
         private const string WorkerServiceFile = "Infinni.NodeWorker.exe";
         private const string WorkerServiceInstallVerb = "install";
         private const string WorkerServiceUninstallVerb = "uninstall";
-        private const string WorkerServiceInitVerb = "init";
         private const string WorkerServiceStartVerb = "start";
         private const string WorkerServiceStopVerb = "stop";
+        private const string InitStartOptionVerb = "init";
+        private const string StartStartOptionVerb = "start";
 
 
         public Task Install(InstallDirectoryItem appInstallation)
@@ -33,12 +34,12 @@ namespace Infinni.Node.Services
 
         public Task Init(InstallDirectoryItem appInstallation, int? timeoutSeconds = null)
         {
-            return ExecuteWorkerService(WorkerServiceInitVerb, appInstallation, timeoutSeconds);
+            return ExecuteWorkerService(WorkerServiceStartVerb, appInstallation, timeoutSeconds, InitStartOptionVerb);
         }
 
         public Task Start(InstallDirectoryItem appInstallation, int? timeoutSeconds = null)
         {
-            return ExecuteWorkerService(WorkerServiceStartVerb, appInstallation, timeoutSeconds);
+            return ExecuteWorkerService(WorkerServiceStartVerb, appInstallation, timeoutSeconds, StartStartOptionVerb);
         }
 
         public Task Stop(InstallDirectoryItem appInstallation, int? timeoutSeconds = null)
@@ -52,14 +53,14 @@ namespace Infinni.Node.Services
         }
 
 
-        private static Task ExecuteWorkerService(string commandVerb, InstallDirectoryItem appInstallation, int? timeoutSeconds = null)
+        private static Task ExecuteWorkerService(string commandVerb, InstallDirectoryItem appInstallation, int? timeoutSeconds = null, string startOptions = null)
         {
             var workerServiceFile = Path.Combine(appInstallation.Directory.FullName, WorkerServiceFile);
-            var workerServiceArguments = BuildServiceCommand(commandVerb, appInstallation, timeoutSeconds);
+            var workerServiceArguments = BuildServiceCommand(commandVerb, appInstallation, timeoutSeconds, startOptions);
             return MonoHelper.ExecuteProcessAsync(workerServiceFile, workerServiceArguments);
         }
 
-        private static string BuildServiceCommand(string commandVerb, InstallDirectoryItem appInstallation, int? timeoutSeconds)
+        private static string BuildServiceCommand(string commandVerb, InstallDirectoryItem appInstallation, int? timeoutSeconds, string startOptions)
         {
             var command = new StringBuilder(commandVerb);
             AddCommandOption(command, "packageId", appInstallation.PackageId);
@@ -67,6 +68,11 @@ namespace Infinni.Node.Services
             AddCommandOption(command, "packageInstance", appInstallation.Instance);
             AddCommandOption(command, "packageDirectory", appInstallation.Directory.FullName);
             AddCommandOption(command, "packageTimeout", timeoutSeconds);
+
+            if (startOptions != null)
+            {
+                AddCommandOption(command, "startOptions", startOptions);
+            }
 
             return command.ToString();
         }
