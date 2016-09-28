@@ -253,7 +253,7 @@
     <value>Can not find any applications to initialize.</value>
   </data>
   <data name="InitCommandHandler_StartInitialization" xml:space="preserve">
-    <value>Initialization started.</value>
+    <value>Initialization of '{0}' started.</value>
   </data>
   <data name="StopCommandHandler_StopAppService" xml:space="preserve">
     <value>Stop the service of the application '{0}'.</value>

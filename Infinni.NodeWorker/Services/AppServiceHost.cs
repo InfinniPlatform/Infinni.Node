@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.Composition.Hosting;
+using System.Linq;
 
 namespace Infinni.NodeWorker.Services
 {
@@ -74,8 +75,8 @@ namespace Infinni.NodeWorker.Services
         {
             var aggregateCatalog = new DirectoryAssemblyCatalog();
             var compositionContainer = new CompositionContainer(aggregateCatalog);
-            var lazyInstance = compositionContainer.GetExport<T>(contractName);
-            return lazyInstance;
+            var lazyInstances = compositionContainer.GetExports<T>(contractName);
+            return lazyInstances.First();
         }
     }
 }

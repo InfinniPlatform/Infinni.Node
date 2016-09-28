@@ -151,7 +151,7 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Initialization started..
+        ///   Looks up a localized string similar to Initialization of &apos;{0}&apos; started..
         /// </summary>
         internal static string InitCommandHandler_StartInitialization {
             get {

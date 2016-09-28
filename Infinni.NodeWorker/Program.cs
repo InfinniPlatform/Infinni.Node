@@ -11,7 +11,7 @@ namespace Infinni.NodeWorker
 {
     public class Program
     {
-        public static int Main()
+        public static void Main()
         {
             /* Вся логика метода Main() находится в отдельных методах, чтобы JIT-компиляция Main()
              * прошла без загрузки дополнительных сборок, поскольку до этого момента нужно успеть
@@ -23,8 +23,8 @@ namespace Infinni.NodeWorker
             // Устанавливает для приложения контекст загрузки сборок по умолчанию
             InitializeAssemblyLoadContext();
 
-            // Запускает хостинг приложения
-            return RunServiceHost();
+            // Запуск хостинга приложения и завершение всех потоков
+            Environment.Exit(RunServiceHost());
         }
 
         private static void InitializeAssemblyLoadContext()
@@ -40,17 +40,17 @@ namespace Infinni.NodeWorker
             AppServiceOptions serviceOptions = null;
 
             var topshelfHost = HostFactory.New(config => { CreateHost(config, out serviceOptions); });
-
+            
             // Инициализация окружения для приложения
 
             if (serviceOptions.StartOptions.Contains("init"))
             {
                 var initAppServiceHost = new AppServiceHost();
-                initAppServiceHost.Init(TimeSpan.FromSeconds(60));
+                initAppServiceHost.Init(TimeSpan.FromSeconds(10));
             }
 
             // Запуск службы приложения
-
+            
             if (string.IsNullOrWhiteSpace(serviceOptions.StartOptions) ||
                 serviceOptions.StartOptions.Contains("start"))
             {
