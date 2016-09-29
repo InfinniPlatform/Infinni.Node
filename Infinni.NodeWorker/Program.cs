@@ -43,16 +43,16 @@ namespace Infinni.NodeWorker
             
             // Инициализация окружения для приложения
 
-            if (serviceOptions.StartOptions.Contains("init"))
+            if (serviceOptions.StartOptions.IndexOf("init", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 var initAppServiceHost = new AppServiceHost();
                 initAppServiceHost.Init(TimeSpan.FromSeconds(10));
             }
 
             // Запуск службы приложения
-            
+
             if (string.IsNullOrWhiteSpace(serviceOptions.StartOptions) ||
-                serviceOptions.StartOptions.Contains("start"))
+                serviceOptions.StartOptions.IndexOf("start", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 var topshelfExitCode = topshelfHost.Run();
                 return topshelfExitCode == TopshelfExitCode.Ok
