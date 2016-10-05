@@ -43,10 +43,10 @@ namespace Infinni.Node.Services
         Task Stop(InstallDirectoryItem appInstallation, int? timeoutSeconds = null);
 
         /// <summary>
-        /// Возвращает состояние сервиса приложения.
+        /// Возвращает информацию о запущенном процессе приложения.
         /// </summary>
         /// <param name="appInstallation">Сведения об установке приложения.</param>
         /// <param name="timeoutSeconds">Таймаут выполнения операции (в секундах).</param>
-        Task<object> GetStatus(InstallDirectoryItem appInstallation, int? timeoutSeconds = null);
+        Task<ProcessInfo> GetProcessInfo(InstallDirectoryItem appInstallation, int? timeoutSeconds = null);
     }
 }

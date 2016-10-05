@@ -215,6 +215,7 @@
     </Compile>
     <Compile Include="Services\IAppServiceManager.cs" />
     <Compile Include="Services\AppServiceManager.cs" />
+    <Compile Include="Services\ProcessHelper.cs" />
     <Compile Include="Settings\AppSettings.cs" />
   </ItemGroup>
   <ItemGroup>

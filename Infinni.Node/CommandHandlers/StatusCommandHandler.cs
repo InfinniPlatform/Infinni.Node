@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
-
+using CommandLine;
 using Infinni.Node.CommandOptions;
 using Infinni.Node.Packaging;
 using Infinni.Node.Properties;
@@ -76,12 +79,16 @@ namespace Infinni.Node.CommandHandlers
 
         private async Task<object> GetStatusAppService(InstallDirectoryItem appInstallation, int? timeoutSeconds)
         {
-            object status = null;
-            object error = null;
+            var status = new ProcessInfo
+            {
+                State = "Error while getting process information."
+            };
+            string error = null;
 
             try
             {
-                status = await _appService.GetStatus(appInstallation, timeoutSeconds);
+                status = await _appService.GetProcessInfo(appInstallation, timeoutSeconds);
+
             }
             catch (AggregateException e)
             {
@@ -92,14 +99,23 @@ namespace Infinni.Node.CommandHandlers
             catch (Exception e)
             {
                 error = e.Message;
+                status = new ProcessInfo();
+                return new AppStatus
+                {
+                    Id = appInstallation.PackageId,
+                    Version = appInstallation.PackageVersion,
+                    Instance = appInstallation.Instance,
+                    ProcessInfo = status,
+                    Error = error
+                };
             }
 
-            return new
+            return new AppStatus
             {
                 Id = appInstallation.PackageId,
                 Version = appInstallation.PackageVersion,
                 Instance = appInstallation.Instance,
-                Status = status,
+                ProcessInfo = status,
                 Error = error
             };
         }

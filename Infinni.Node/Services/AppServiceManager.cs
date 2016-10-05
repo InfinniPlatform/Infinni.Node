@@ -2,9 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-
 using Infinni.Node.Packaging;
-using Infinni.Node.Properties;
 
 namespace Infinni.Node.Services
 {
@@ -47,9 +45,9 @@ namespace Infinni.Node.Services
             return ExecuteWorkerService(WorkerServiceStopVerb, appInstallation, timeoutSeconds);
         }
 
-        public Task<object> GetStatus(InstallDirectoryItem appInstallation, int? timeoutSeconds = null)
+        public Task<ProcessInfo> GetProcessInfo(InstallDirectoryItem appInstallation, int? timeoutSeconds = null)
         {
-            return Task.FromResult<object>(Resources.NotImplemented);
+            return ProcessHelper.GetProcessInfo(appInstallation);
         }
 
 
@@ -80,7 +78,7 @@ namespace Infinni.Node.Services
 
         private static void AddCommandOption(StringBuilder command, string name, object value)
         {
-            if (value != null && (!(value is string) || !string.IsNullOrWhiteSpace((string)value)))
+            if ((value != null) && (!(value is string) || !string.IsNullOrWhiteSpace((string) value)))
             {
                 command.AppendFormat(" -{0} \"{1}\"", name, value);
             }
