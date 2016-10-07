@@ -223,7 +223,7 @@
     <value>Find existing installations</value>
   </data>
   <data name="StopCommandHandler_StopAppServices" xml:space="preserve">
-    <value>Stop the service of the application '{0}'.</value>
+    <value>Stop the service of the application.</value>
   </data>
   <data name="NotImplemented" xml:space="preserve">
     <value>Command is not implemented.</value>

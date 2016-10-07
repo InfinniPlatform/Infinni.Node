@@ -37,7 +37,7 @@ namespace Infinni.Node.CommandHandlers
 
             var commandTransaction = new CommandTransactionManager<StopCommandContext>(_log)
                 .Stage(Resources.StopCommandHandler_FindAppInstallations, FindAppInstallations)
-                .Stage(string.Format(Resources.StopCommandHandler_StopAppServices,commandContext.CommandOptions.Instance), StopAppServices);
+                .Stage(Resources.StopCommandHandler_StopAppServices, StopAppServices);
 
             await commandTransaction.Execute(commandContext);
         }

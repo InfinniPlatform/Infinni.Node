@@ -412,7 +412,7 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Stop the service of the application &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Stop the service of the application..
         /// </summary>
         internal static string StopCommandHandler_StopAppServices {
             get {

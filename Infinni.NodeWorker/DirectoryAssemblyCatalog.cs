@@ -47,10 +47,7 @@ namespace Infinni.NodeWorker
                         catalog.Catalogs.Add(assemblyCatalog);
                     }
                 }
-                catch (ReflectionTypeLoadException)
-                {
-                }
-                catch (BadImageFormatException)
+                catch
                 {
                 }
             }
