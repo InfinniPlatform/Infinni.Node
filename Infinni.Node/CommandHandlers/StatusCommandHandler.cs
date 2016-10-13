@@ -26,13 +26,14 @@ namespace Infinni.Node.CommandHandlers
             _installDirectory = installDirectory;
             _appService = appService;
             _log = log;
+            _serializer = new JsonSerializer {NullValueHandling = NullValueHandling.Ignore};
         }
 
 
         private readonly IInstallDirectoryManager _installDirectory;
         private readonly IAppServiceManager _appService;
         private readonly ILog _log;
-
+        private readonly JsonSerializer _serializer;
 
         public override async Task Handle(StatusCommandOptions options)
         {
@@ -43,8 +44,7 @@ namespace Infinni.Node.CommandHandlers
 
             var commandTransaction = new CommandTransactionManager<StatusCommandContext>(_log)
                 .Stage(Resources.StatusCommandHandler_FindAppInstallations, FindAppInstallations)
-                .Stage(Resources.StatusCommandHandler_GetStatusAppServices, GetStatusAppServices)
-                ;
+                .Stage(Resources.StatusCommandHandler_GetStatusAppServices, GetStatusAppServices);
 
             await commandTransaction.Execute(commandContext);
         }
@@ -72,7 +72,11 @@ namespace Infinni.Node.CommandHandlers
                 statuses.Add(status);
             }
 
-            var jStatuses = JArray.FromObject(statuses).ToString(Formatting.None);
+            var formatting = context.CommandOptions.Format
+                                 ? Formatting.Indented
+                                 : Formatting.None;
+
+            var jStatuses = JArray.FromObject(statuses, _serializer).ToString(formatting);
 
             _log.Info(jStatuses);
         }

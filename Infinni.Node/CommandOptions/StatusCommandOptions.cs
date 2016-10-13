@@ -40,5 +40,15 @@ namespace Infinni.Node.CommandOptions
                        "If omitted, defaults infinite."
             )]
         public int? Timeout { get; set; }
+
+        [Option(
+             'f',
+             "format",
+             Required = false,
+             Default = false,
+             HelpText = "Indicates whether this command will format output. " +
+                        "If omitted, defaults none formatting."
+         )]
+        public bool Format { get; set; }
     }
 }
