@@ -56,6 +56,16 @@ namespace Infinni.Node.Services
     /// </summary>
     public struct AppStatus
     {
+        public AppStatus(InstallDirectoryItem appInstallation, ProcessInfo processInfo, string error)
+        {
+            Id = appInstallation.PackageId;
+            Version = appInstallation.PackageVersion;
+            Instance = appInstallation.Instance;
+            AppFullName = $"{appInstallation.PackageId}.{appInstallation.PackageVersion}@{appInstallation.Instance}".TrimEnd('@');
+            ProcessInfo = processInfo;
+            Error = error;
+        }
+
         /// <summary>
         /// Идентификатор приложения.
         /// </summary>
@@ -70,6 +80,11 @@ namespace Infinni.Node.Services
         /// Наименование экземпляра приложения.
         /// </summary>
         public string Instance { get; set; }
+
+        /// <summary>
+        /// Полное наименование приложения.
+        /// </summary>
+        public string AppFullName { get; set; }
 
         /// <summary>
         /// Информация о запущенном процессе приложения.

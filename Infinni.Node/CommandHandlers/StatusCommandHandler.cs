@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using CommandLine;
 using Infinni.Node.CommandOptions;
 using Infinni.Node.Packaging;
 using Infinni.Node.Properties;
@@ -76,22 +72,23 @@ namespace Infinni.Node.CommandHandlers
                                  ? Formatting.Indented
                                  : Formatting.None;
 
-            var jStatuses = JArray.FromObject(statuses, _serializer).ToString(formatting);
+            var statusesJson = JArray.FromObject(statuses, _serializer)
+                                     .ToString(formatting);
 
-            _log.Info(jStatuses);
+            _log.Info(statusesJson);
         }
 
         private async Task<object> GetStatusAppService(InstallDirectoryItem appInstallation, int? timeoutSeconds)
         {
-            var status = new ProcessInfo
+            string error = null;
+            var processInfo = new ProcessInfo
             {
                 State = "Error while getting process information."
             };
-            string error = null;
 
             try
             {
-                status = await _appService.GetProcessInfo(appInstallation, timeoutSeconds);
+                processInfo = await _appService.GetProcessInfo(appInstallation, timeoutSeconds);
 
             }
             catch (AggregateException e)
@@ -102,30 +99,13 @@ namespace Infinni.Node.CommandHandlers
             }
             catch (Exception e)
             {
-                error = e.Message;
-                status = new ProcessInfo();
-                return new AppStatus
-                {
-                    Id = appInstallation.PackageId,
-                    Version = appInstallation.PackageVersion,
-                    Instance = appInstallation.Instance,
-                    ProcessInfo = status,
-                    Error = error
-                };
+                return new AppStatus(appInstallation, new ProcessInfo(), e.Message);
             }
 
-            return new AppStatus
-            {
-                Id = appInstallation.PackageId,
-                Version = appInstallation.PackageVersion,
-                Instance = appInstallation.Instance,
-                ProcessInfo = status,
-                Error = error
-            };
+            return new AppStatus(appInstallation, processInfo, error);
         }
 
-
-        class StatusCommandContext
+        private class StatusCommandContext
         {
             public StatusCommandOptions CommandOptions;
 
