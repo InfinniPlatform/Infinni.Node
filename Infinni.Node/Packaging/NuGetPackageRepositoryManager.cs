@@ -4,10 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using NuGet.Configuration;
+using NuGet;
 using NuGet.Frameworks;
-using NuGet.Logging;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -16,6 +14,9 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
 using NuGet.Resolver;
 using NuGet.Versioning;
+using ILogger = NuGet.Logging.ILogger;
+using PackageSource = NuGet.Configuration.PackageSource;
+using PackageSourceProvider = NuGet.Configuration.PackageSourceProvider;
 
 namespace Infinni.Node.Packaging
 {
@@ -140,6 +141,30 @@ namespace Infinni.Node.Packaging
                 CancellationToken.None);
 
             return GetPackageContent(packageIdentity, installActions.Select(i => i.PackageIdentity).ToList());
+        }
+
+
+        /// <summary>
+        /// Возвращает список доступных в источниках пакетов по части ID.
+        /// </summary>
+        /// <param name="searchTerm">Часть ID пакета.</param>
+        /// <param name="allowPrereleaseVersions">Разрешен ли поиск среди предрелизных версий.</param>
+        public Task<IEnumerable<IPackage>> FindAvailablePackages(string searchTerm, bool allowPrereleaseVersions)
+        {
+            var findPackage = new List<IPackage>();
+
+            foreach (var source in _packageSources)
+            {
+                var repository = (IPackageRepository) new DataServicePackageRepository(new Uri(source));
+                var packages = repository.Search(searchTerm, allowPrereleaseVersions)
+                                         .Where(p => p.IsAbsoluteLatestVersion)
+                                         .OrderBy(p => p.Id)
+                                         .AsEnumerable();
+
+                findPackage.AddRange(packages);
+            }
+
+            return Task.FromResult(findPackage.AsEnumerable());
         }
 
 

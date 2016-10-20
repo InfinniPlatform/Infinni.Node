@@ -49,7 +49,7 @@ namespace Infinni.Node.CommandHandlers
         {
             context.AppInstallations = _installDirectory.GetItems(context.CommandOptions.Id, context.CommandOptions.Version, context.CommandOptions.Instance);
 
-            if (context.AppInstallations == null || context.AppInstallations.Length <= 0)
+            if (context.AppInstallations == null)
             {
                 throw new CommandHandlerException(Resources.StatusCommandHandler_CanNotFindAnyApplicationsToGetStatus);
             }

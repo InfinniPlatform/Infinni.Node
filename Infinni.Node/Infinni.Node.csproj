@@ -178,8 +178,10 @@
     <Compile Include="CommandHandlers\CommandHandlerException.cs" />
     <Compile Include="CommandHandlers\CommandHandlerBase.cs" />
     <Compile Include="CommandHandlers\InitCommandHandler.cs" />
+    <Compile Include="CommandHandlers\PackagesCommandHandler.cs" />
     <Compile Include="CommandHandlers\RestartCommandHandler.cs" />
     <Compile Include="CommandOptions\InitCommandOptions.cs" />
+    <Compile Include="CommandOptions\PackagesCommandOptions.cs" />
     <Compile Include="CommandOptions\RestartCommandOptions.cs" />
     <Compile Include="Packaging\CommonHelper.cs" />
     <Compile Include="CommandHandlers\ICommandHandler.cs" />

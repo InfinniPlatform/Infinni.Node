@@ -20,7 +20,8 @@ namespace Infinni.Node
             .RegisterCommand(() => new StartCommandHandler(new InstallDirectoryManager(Log.Default), new AppServiceManager(), Log.Default))
             .RegisterCommand(() => new StopCommandHandler(new InstallDirectoryManager(Log.Default), new AppServiceManager(), Log.Default))
             .RegisterCommand(() => new RestartCommandHandler(new InstallDirectoryManager(Log.Default), new AppServiceManager(), Log.Default))
-            .RegisterCommand(() => new StatusCommandHandler(new InstallDirectoryManager(Log.Default), new AppServiceManager(), Log.Default));
+            .RegisterCommand(() => new StatusCommandHandler(new InstallDirectoryManager(Log.Default), new AppServiceManager(), Log.Default))
+            .RegisterCommand(() => new PackagesCommandHandler(new NuGetPackageRepositoryManagerFactory(new NuGetLogger(Log.Default)), Log.Default));
 
 
         private static int Main(string[] args)
