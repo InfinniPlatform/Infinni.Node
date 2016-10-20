@@ -150,6 +150,11 @@ namespace Infinni.Node.Packaging
 
         public IEnumerable<InstallDirectoryItem> GetItems()
         {
+            if (!Directory.Exists(_rootInstallPath))
+            {
+                yield break;
+            }
+
             var directories = Directory.EnumerateDirectories(_rootInstallPath);
 
             foreach (var path in directories)
