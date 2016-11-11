@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -143,7 +145,6 @@ namespace Infinni.Node.Packaging
             return GetPackageContent(packageIdentity, installActions.Select(i => i.PackageIdentity).ToList());
         }
 
-
         /// <summary>
         /// Возвращает список доступных в источниках пакетов по части ID.
         /// </summary>
@@ -151,18 +152,24 @@ namespace Infinni.Node.Packaging
         /// <param name="allowPrereleaseVersions">Разрешен ли поиск среди предрелизных версий.</param>
         public Task<IEnumerable<IPackage>> FindAvailablePackages(string searchTerm, bool allowPrereleaseVersions)
         {
-            var findPackage = new List<IPackage>();
+            var stopwatch = Stopwatch.StartNew();
+            var findPackage = new ConcurrentBag<IPackage>();
 
-            foreach (var source in _packageSources)
-            {
-                var repository = (IPackageRepository) new DataServicePackageRepository(new Uri(source));
-                var packages = repository.Search(searchTerm, allowPrereleaseVersions)
-                                         .Where(p => p.IsAbsoluteLatestVersion)
-                                         .OrderBy(p => p.Id)
-                                         .AsEnumerable();
+            Parallel.ForEach(_packageSources, (s, state, arg3) =>
+                             {
+                                 var repository = (IPackageRepository) new DataServicePackageRepository(new Uri(s));
+                                 var packages = repository.Search(searchTerm, allowPrereleaseVersions)
+                                                          .Where(p => p.IsAbsoluteLatestVersion)
+                                                          .OrderBy(p => p.Id)
+                                                          .AsEnumerable();
 
-                findPackage.AddRange(packages);
-            }
+                                 foreach (var package in packages)
+                                 {
+                                     findPackage.Add(package);
+                                 }
+                             });
+
+            Console.WriteLine(stopwatch.ElapsedMilliseconds);
 
             return Task.FromResult(findPackage.AsEnumerable());
         }
