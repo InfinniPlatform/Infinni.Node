@@ -152,7 +152,6 @@ namespace Infinni.Node.Packaging
         /// <param name="allowPrereleaseVersions">Разрешен ли поиск среди предрелизных версий.</param>
         public Task<IEnumerable<IPackage>> FindAvailablePackages(string searchTerm, bool allowPrereleaseVersions)
         {
-            var stopwatch = Stopwatch.StartNew();
             var findPackage = new ConcurrentBag<IPackage>();
 
             Parallel.ForEach(_packageSources, (source, state, i) =>
@@ -181,8 +180,6 @@ namespace Infinni.Node.Packaging
                                      findPackage.Add(package);
                                  }
                              });
-
-            Console.WriteLine(stopwatch.ElapsedMilliseconds);
 
             var result = findPackage.OrderBy(p => p.Published)
                                     .ThenByDescending(p => p.Published)
