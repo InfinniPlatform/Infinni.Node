@@ -155,13 +155,26 @@ namespace Infinni.Node.Packaging
             var stopwatch = Stopwatch.StartNew();
             var findPackage = new ConcurrentBag<IPackage>();
 
-            Parallel.ForEach(_packageSources, (s, state, arg3) =>
+            Parallel.ForEach(_packageSources, (source, state, i) =>
                              {
-                                 var repository = (IPackageRepository) new DataServicePackageRepository(new Uri(s));
-                                 var packages = repository.Search(searchTerm, allowPrereleaseVersions)
+                                 var repository = (IPackageRepository) new DataServicePackageRepository(new Uri(source));
+
+                                 IEnumerable<IPackage> packages;
+
+                                 if (allowPrereleaseVersions)
+                                 {
+                                     packages = repository.Search(searchTerm, true)
                                                           .Where(p => p.IsAbsoluteLatestVersion)
                                                           .OrderBy(p => p.Id)
                                                           .AsEnumerable();
+                                 }
+                                 else
+                                 {
+                                     packages = repository.Search(searchTerm, false)
+                                                          .Where(p => p.IsLatestVersion)
+                                                          .OrderBy(p => p.Id)
+                                                          .AsEnumerable();
+                                 }
 
                                  foreach (var package in packages)
                                  {
@@ -171,7 +184,11 @@ namespace Infinni.Node.Packaging
 
             Console.WriteLine(stopwatch.ElapsedMilliseconds);
 
-            return Task.FromResult(findPackage.AsEnumerable());
+            var result = findPackage.OrderBy(p => p.Published)
+                                    .ThenByDescending(p => p.Published)
+                                    .AsEnumerable();
+
+            return Task.FromResult(result);
         }
 
 
