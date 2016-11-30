@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -27,6 +26,7 @@ namespace Infinni.Node.Packaging
     /// </summary>
     public class NuGetPackageRepositoryManager : IPackageRepositoryManager
     {
+        public const string PluginFolderName = "plugin";
         private static readonly NuGetFrameworkSorter NuGetFrameworkComparer = new NuGetFrameworkSorter();
 
 
@@ -248,6 +248,17 @@ namespace Infinni.Node.Packaging
                         packageContent.Content.Add(installItem);
                     }
                 }
+
+                var pluginItems = GetCompatibleItems(reader, reader.GetPluginItems().ToList(), targetFramework, compatibilityProvider);
+
+                if (pluginItems?.Items != null)
+                {
+                    foreach (var item in pluginItems.Items)
+                    {
+                        var installItem = GetPackageItem(packagePath, item, PluginFolderName, pluginItems.TargetFramework);
+                        packageContent.Plugin.Add(installItem);
+                    }
+                }
             }
         }
 
@@ -406,6 +417,55 @@ namespace Infinni.Node.Packaging
             }
 
             throw new InvalidOperationException(string.Format(Properties.Resources.InstallDirectoryOfPackageNotFound, $"{packageIdentity.Id}.{nuGetVersion}"));
+        }
+    }
+
+    public static class PackageFolderReaderExstensions
+    {
+        /// <summary>
+        /// Возвращает список 
+        /// </summary>
+        /// <param name="reader"></param>
+        public static IEnumerable<FrameworkSpecificGroup> GetPluginItems(this PackageFolderReader reader)
+        {
+            var plugins = reader.GetFiles(NuGetPackageRepositoryManager.PluginFolderName);
+            
+            var dictionary = new Dictionary<NuGetFramework, List<string>>();
+
+            foreach (var p in plugins)
+            {
+                var nugetFramework = GetNugetFrameworkFromPath(p);
+
+                if (dictionary.ContainsKey(nugetFramework))
+                {
+                    dictionary[nugetFramework].Add(p);
+                }
+                else
+                {
+                    dictionary.Add(nugetFramework, new List<string> {p});
+                }
+            }
+
+            return dictionary.Select(s => new FrameworkSpecificGroup(s.Key, s.Value));
+        }
+
+        private static NuGetFramework GetNugetFrameworkFromPath(string p)
+        {
+            var frameworkResult = NuGetFramework.UnsupportedFramework;
+
+            var pathChunks = p.Split(new[] {Path.AltDirectorySeparatorChar}, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var chunk in pathChunks)
+            {
+                var nuGetFramework = NuGetFramework.Parse(chunk);
+
+                if (!nuGetFramework.IsUnsupported)
+                {
+                    return nuGetFramework;
+                }
+            }
+
+            return frameworkResult;
         }
     }
 }

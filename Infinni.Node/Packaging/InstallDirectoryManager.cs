@@ -112,6 +112,14 @@ namespace Infinni.Node.Packaging
                 var destinationPath = Path.Combine(installPath, "content", contentFile.InstallPath);
                 CopyFileWithOverwrite(contentFile.SourcePath, destinationPath, installFiles);
             }
+
+
+            // Копирование файлов из каталога 'plugin'
+            foreach (var contentFile in appPackage.Plugin)
+            {
+                var destinationPath = Path.Combine(installPath, "platform", contentFile.InstallPath);
+                CopyFileWithOverwrite(contentFile.SourcePath, destinationPath, installFiles);
+            }
         }
 
         private void CopyFileWithOverwrite(string sourcePath, string destinationPath, IDictionary<string, string> installFiles)

@@ -15,6 +15,7 @@ namespace Infinni.Node.Packaging
             Dependencies = dependencies;
             Lib = new List<PackageFile>();
             Content = new List<PackageFile>();
+            Plugin = new List<PackageFile>();
         }
 
         /// <summary>
@@ -36,5 +37,10 @@ namespace Infinni.Node.Packaging
         /// Список файлов каталога 'content'.
         /// </summary>
         public List<PackageFile> Content { get; }
+
+        /// <summary>
+        /// Список файлов каталога 'plugin'.
+        /// </summary>
+        public List<PackageFile> Plugin { get; }
     }
 }
