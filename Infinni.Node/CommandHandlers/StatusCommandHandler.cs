@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using Infinni.Node.CommandOptions;
 using Infinni.Node.Packaging;
 using Infinni.Node.Properties;
 using Infinni.Node.Services;
-
+using Infinni.Node.Settings;
 using log4net;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Formatting = Newtonsoft.Json.Formatting;
 
 namespace Infinni.Node.CommandHandlers
 {
@@ -86,10 +90,11 @@ namespace Infinni.Node.CommandHandlers
                 State = "Error while getting process information."
             };
 
+            var imageUrl = GetImageUrl(appInstallation);
+
             try
             {
                 processInfo = await _appService.GetProcessInfo(appInstallation, timeoutSeconds);
-
             }
             catch (AggregateException e)
             {
@@ -99,10 +104,38 @@ namespace Infinni.Node.CommandHandlers
             }
             catch (Exception e)
             {
-                return new AppStatus(appInstallation, new ProcessInfo(), e.Message);
+                return new AppStatus(appInstallation, imageUrl, new ProcessInfo(), e.Message);
             }
 
-            return new AppStatus(appInstallation, processInfo, error);
+            return new AppStatus(appInstallation, imageUrl, processInfo, error);
+        }
+
+        private static string GetImageUrl(InstallDirectoryItem appInstallation)
+        {
+            var packagesDirectoryName = AppSettings.GetValue("PackagesRepository");
+
+            if (!string.IsNullOrEmpty(packagesDirectoryName))
+            {
+                var packageFullName = $"{appInstallation.PackageId}.{appInstallation.PackageVersion}";
+                var packageDirectory = Path.Combine(packagesDirectoryName, packageFullName);
+
+                var packageDirectoryInfo = new DirectoryInfo(packageDirectory);
+
+                if (packageDirectoryInfo.Exists)
+                {
+                    var nuspecFilePath = Path.Combine(packageDirectoryInfo.FullName, $"{appInstallation.PackageId}.nuspec");
+
+                    using (var stream = new FileStream(nuspecFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        var nuspec = XDocument.Load(stream);
+                        var ns = nuspec.Root?.Name.Namespace;
+
+                        return nuspec.Root?.Element(ns + "metadata")?.Element(ns + "iconUrl")?.Value;
+                    }
+                }
+            }
+
+            return string.Empty;
         }
 
         private class StatusCommandContext
