@@ -30,11 +30,11 @@ namespace Infinni.NodeWorker
 
         private readonly string _assemblyDirectory;
 
-        private readonly ConcurrentDictionary<AssemblyName, Assembly> _assemblyResolutions
-            = new ConcurrentDictionary<AssemblyName, Assembly>(AssemblyNameComparer.Default);
+        private readonly ConcurrentDictionary<AssemblyName, Lazy<Assembly>> _assemblyResolutions
+            = new ConcurrentDictionary<AssemblyName, Lazy<Assembly>>(AssemblyNameComparer.Default);
 
-        private readonly ConcurrentDictionary<string, SortedDictionary<AssemblyName, Assembly>> _loadedAssemblies
-            = new ConcurrentDictionary<string, SortedDictionary<AssemblyName, Assembly>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, SortedDictionary<AssemblyName, Lazy<Assembly>>> _loadedAssemblies
+            = new ConcurrentDictionary<string, SortedDictionary<AssemblyName, Lazy<Assembly>>>(StringComparer.OrdinalIgnoreCase);
 
 
         /// <summary>
@@ -49,20 +49,20 @@ namespace Infinni.NodeWorker
                 throw new ArgumentNullException(nameof(assemblyName));
             }
 
-            Assembly result;
+            Lazy<Assembly> result;
 
             // Если сборка с указанным именем уже разрешена
             if (_assemblyResolutions.TryGetValue(assemblyName, out result))
             {
-                return result;
+                return result.Value;
             }
 
-            SortedDictionary<AssemblyName, Assembly> assemblies;
+            SortedDictionary<AssemblyName, Lazy<Assembly>> assemblies;
 
             // Если сборки с указанным именем еще не загружены
             if (!_loadedAssemblies.TryGetValue(assemblyName.Name, out assemblies))
             {
-                assemblies = new SortedDictionary<AssemblyName, Assembly>(AssemblyNameComparer.Default);
+                assemblies = new SortedDictionary<AssemblyName, Lazy<Assembly>>(AssemblyNameComparer.Default);
                 assemblies = _loadedAssemblies.GetOrAdd(assemblyName.Name, assemblies);
 
                 try
@@ -75,8 +75,16 @@ namespace Infinni.NodeWorker
                         try
                         {
                             // Попытка загрузки сборки из найденного файла
-                            var assembly = Assembly.LoadFile(Path.GetFullPath(assemblyFile));
-                            assemblies[assembly.GetName()] = assembly;
+                            var assemblyFullPath = Path.GetFullPath(assemblyFile);
+                            var assembly = Assembly.ReflectionOnlyLoadFrom(assemblyFullPath);
+
+                            var name = assembly.GetName();
+
+                            // При совпадении имен сборки, наибольший приоритет у сборки в корне проекта. 
+                            if (!assemblies.ContainsKey(name))
+                            {
+                                assemblies.Add(name, new Lazy<Assembly>(()=> Assembly.LoadFile(assemblyFullPath)));
+                            }
                         }
                         catch
                         {
@@ -96,7 +104,7 @@ namespace Infinni.NodeWorker
             // Добавление сборки в список разрешенных
             result = _assemblyResolutions.GetOrAdd(assemblyName, lowestAssembly.Value);
 
-            return result;
+            return result.Value;
         }
 
 
