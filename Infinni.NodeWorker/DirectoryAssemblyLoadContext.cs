@@ -54,7 +54,7 @@ namespace Infinni.NodeWorker
             // Если сборка с указанным именем уже разрешена
             if (_assemblyResolutions.TryGetValue(assemblyName, out result))
             {
-                return result.Value;
+                return result?.Value;
             }
 
             SortedDictionary<AssemblyName, Lazy<Assembly>> assemblies;
@@ -83,7 +83,7 @@ namespace Infinni.NodeWorker
                             // При совпадении имен сборки, наибольший приоритет у сборки в корне проекта. 
                             if (!assemblies.ContainsKey(name))
                             {
-                                assemblies.Add(name, new Lazy<Assembly>(()=> Assembly.LoadFile(assemblyFullPath)));
+                                assemblies.Add(name, new Lazy<Assembly>(() => Assembly.LoadFile(assemblyFullPath)));
                             }
                         }
                         catch
@@ -104,7 +104,7 @@ namespace Infinni.NodeWorker
             // Добавление сборки в список разрешенных
             result = _assemblyResolutions.GetOrAdd(assemblyName, lowestAssembly.Value);
 
-            return result.Value;
+            return result?.Value;
         }
 
 
