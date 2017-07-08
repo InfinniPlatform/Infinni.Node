@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany("Infinnity Solutions")]
 [assembly: AssemblyProduct("InfinniPlatform")]
-[assembly: AssemblyCopyright("Copyright © Infinnity Solutions 2015")]
+[assembly: AssemblyCopyright("Copyright © Infinnity Solutions 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
