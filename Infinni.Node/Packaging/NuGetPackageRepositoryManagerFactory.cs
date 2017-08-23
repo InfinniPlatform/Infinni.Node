@@ -14,7 +14,8 @@ namespace Infinni.Node.Packaging
         {
             "https://api.nuget.org/v3/index.json",
             "https://www.nuget.org/api/v2/",
-            "http://nuget.infinnity.ru/api/v2/"
+            "http://nuget.infinnity.ru/api/v2/",
+            "https://www.myget.org/F/infinniplatform/"
         };
 
 
