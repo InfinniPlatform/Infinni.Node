@@ -31,7 +31,7 @@ namespace Infinni.Node.Packaging
         /// </remarks>
         private void SetSupportedTargetFramework()
         {
-            InternalMetadata[NuGetProjectMetadataKeys.TargetFramework] = FrameworkConstants.CommonFrameworks.Net452;
+            InternalMetadata[NuGetProjectMetadataKeys.TargetFramework] = new NuGetFramework(".NETFramework", new Version(4, 7, 0, 0));
         }
     }
 }
