@@ -43,7 +43,8 @@ namespace Infinni.NodeWorker
             
             // Инициализация окружения для приложения
 
-            if (serviceOptions.StartOptions.IndexOf("init", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (!string.IsNullOrWhiteSpace(serviceOptions.StartOptions) &&
+                serviceOptions.StartOptions.IndexOf("init", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 var initAppServiceHost = new AppServiceHost();
                 initAppServiceHost.Init(TimeSpan.FromSeconds(10));
