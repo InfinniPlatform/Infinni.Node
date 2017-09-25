@@ -292,6 +292,11 @@ namespace Infinni.Node.Packaging
                 }
             }
 
+            if (compatibleItems==null)
+            {
+                compatibleItems = items.FirstOrDefault(i => i.TargetFramework.DotNetFrameworkName.Contains(".NETStandard")); // TODO Update Nuget packages, add .NETStandard compability
+            }
+
             return compatibleItems;
         }
 
