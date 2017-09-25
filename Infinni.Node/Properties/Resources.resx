@@ -145,7 +145,7 @@
     <value>The application package '{0}' not found. Probably it is a prerelease.</value>
   </data>
   <data name="InstallCommandHandler_CheckAppInstallation" xml:space="preserve">
-    <value>Ckeck existing installations</value>
+    <value>Check existing installations</value>
   </data>
   <data name="InstallCommandHandler_CopyAppFiles" xml:space="preserve">
     <value>Copy files of the application</value>

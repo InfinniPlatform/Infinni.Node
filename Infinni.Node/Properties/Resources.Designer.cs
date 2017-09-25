@@ -178,7 +178,7 @@ namespace Infinni.Node.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ckeck existing installations.
+        ///   Looks up a localized string similar to Check existing installations.
         /// </summary>
         internal static string InstallCommandHandler_CheckAppInstallation {
             get {
