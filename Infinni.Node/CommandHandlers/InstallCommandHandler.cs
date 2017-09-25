@@ -6,7 +6,7 @@ using Infinni.Node.CommandOptions;
 using Infinni.Node.Packaging;
 using Infinni.Node.Properties;
 using Infinni.Node.Services;
-
+using Infinni.Node.Settings;
 using log4net;
 
 using NuGet.Packaging.Core;
@@ -152,7 +152,9 @@ namespace Infinni.Node.CommandHandlers
         {
             try
             {
-                context.ServiceHostPackageContent = await context.PackageRepository.InstallPackage(InfinniPlatformServiceHost, null, allowPrerelease: true);
+                var version = AppSettings.GetValue("NodeWorkerVersion");
+
+                context.ServiceHostPackageContent = await context.PackageRepository.InstallPackage(InfinniPlatformServiceHost, version, true);
             }
             catch (InvalidOperationException exception)
             {
