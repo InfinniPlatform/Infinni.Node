@@ -62,8 +62,7 @@ namespace Infinni.Node.CommandHandlers
                 .Stage(Resources.InstallCommandHandler_InstallPlatformPackage, InstallPlatformPackage)
                 .Stage(Resources.InstallCommandHandler_InstallServiceHostPackage, InstallServiceHostPackage)
                 .Stage(Resources.InstallCommandHandler_CopyAppFiles, CopyAppFiles)
-                .Stage(Resources.InstallCommandHandler_InstallAppService, InstallAppService)
-                ;
+                .Stage(Resources.InstallCommandHandler_InstallAppService, InstallAppService);
 
             await commandTransaction.Execute(commandContext);
         }

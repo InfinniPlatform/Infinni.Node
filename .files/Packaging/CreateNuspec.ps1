@@ -1,161 +1,158 @@
-﻿function Create-Nuspec
-{
-	<#
+﻿function Create-Nuspec {
+  <#
 	.Synopsis
 		Creates nuspec-files from projects files.
 	#>
-	param
-	(
-		[Parameter(HelpMessage = "Path to the solution directory.")]
-		[String] $solutionDir = '.',
+  param
+  (
+    [Parameter(HelpMessage = "Path to the solution directory.")]
+    [String] $solutionDir = '.',
 
-		[Parameter(HelpMessage = "Path to the solution output directory.")]
-		[String] $outputDir = 'Assemblies',
+    [Parameter(HelpMessage = "Path to the solution output directory.")]
+    [String] $outputDir = 'Assemblies',
 
-		[Parameter(HelpMessage = "Path to GlobalAssemblyInfo.cs.")]
-		[String] $assemblyInfo = '.files\Packaging\GlobalAssemblyInfo.cs',
+    [Parameter(HelpMessage = "Path to GlobalAssemblyInfo.cs.")]
+    [String] $assemblyInfo = '.files\Packaging\GlobalAssemblyInfo.cs',
 
-		[Parameter(HelpMessage = "VCS branch name.")]
-		[String] $branchName = '',
+    [Parameter(HelpMessage = "VCS branch name.")]
+    [String] $branchName = '',
 
-		[Parameter(HelpMessage = "VCS commit hash.")]
-		[String] $commitHash = '',
+    [Parameter(HelpMessage = "VCS commit hash.")]
+    [String] $commitHash = '',
 
-		[Parameter(HelpMessage = ".NET version.")]
-		[String] $framework = 'net452'
-	)
+    [Parameter(HelpMessage = ".NET version.")]
+    [String] $framework = 'net47'
+  )
 
-	process
-	{
-		### Build the version number
+  process {
+    ### Build the version number
 
-		$version = Get-Content $assemblyInfo `
-			| Select-String -Pattern 'AssemblyVersion\s*\(\s*\"(?<version>.*?)\"\s*\)' `
-			| ForEach-Object { $_.Matches[0].Groups['version'].Value }
+    $assemblyVersion = Get-Content $assemblyInfo `
+      | Select-String -Pattern 'AssemblyVersion\s*\(\s*\"(?<version>.*?)\"\s*\)' `
+      | ForEach-Object { $_.Matches[0].Groups['version'].Value }
 
-		if ($branchName -and $branchName -notlike '*release-*')
-		{
-			$version = $version + '-' + ($branchName -replace '^(refs/heads/){0,1}(f\-){0,1}', '')
-		}
+    ### Create nuspec-files for specified projects
 
-		### Create nuspec-files for specified projects
+    $projects = $projects = Get-ChildItem -Path $solutionDir -Filter '*.csproj' -Exclude '*.Tests.csproj' -Recurse
 
-		$projects = $projects = Get-ChildItem -Path $solutionDir -Filter '*.csproj' -Exclude '*.Tests.csproj' -Recurse
+    foreach ($project in $projects) {
 
-		foreach ($project in $projects)
-		{
-			[xml] $projectXml = Get-Content $project
+      $version = $assemblyVersion
 
-			$projectRefs = @()
-			$projectName = (Get-ChildItem $project).BaseName
-			$projectAssemblyName = ($projectXml.Project.PropertyGroup.AssemblyName[0])
+      if ($project -like '*Infinni.Node.csproj') {
+        if ($branchName) {
+          $version = $version + '-' + ($branchName -replace '^(refs/heads/){0,1}(f\-){0,1}', '')
+        }
+      }
 
-			Write-Host "Create $projectName.nuspec"
+      if ($project -like '*Infinni.NodeWorker.csproj') {
+        if ($branchName -and $branchName -notlike '*master*') {
+          $version = $version + '-' + ($branchName -replace '^(refs/heads/){0,1}(f\-){0,1}', '')
+        }
+      }
+            
+      [xml] $projectXml = Get-Content $project
 
-			$projectNuspec = 
-				"<?xml version=""1.0"" encoding=""utf-8""?>`r`n" + `
-				"<package xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">`r`n" + `
-				"    <metadata>`r`n" + `
-				"        <id>$projectName</id>`r`n" + `
-				"        <version>$version</version>`r`n" + `
-				"        <authors>Infinnity Solutions</authors>`r`n" + `
-				"        <owners>Infinnity Solutions</owners>`r`n" + `
-				"        <requireLicenseAcceptance>false</requireLicenseAcceptance>`r`n" + `
-				"        <description>Commit $commitHash</description>`r`n" + `
-				"        <copyright>Infinnity Solutions $(Get-Date -Format yyyy)</copyright>`r`n" + `
-				"        <dependencies>`r`n"
+      $projectRefs = @()
+      $projectName = (Get-ChildItem $project).BaseName
+      $projectAssemblyName = ($projectXml.Project.PropertyGroup.AssemblyName[0])
 
-			# Add external dependencies
+      Write-Host "Create $projectName.nuspec"
 
-			$packagesConfigPath = Join-Path $project.Directory.FullName 'packages.config'
+      $projectNuspec = 
+      "<?xml version=""1.0"" encoding=""utf-8""?>`r`n" + `
+        "<package xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">`r`n" + `
+        "    <metadata>`r`n" + `
+        "        <id>$projectName</id>`r`n" + `
+        "        <version>$version</version>`r`n" + `
+        "        <authors>Infinnity Solutions</authors>`r`n" + `
+        "        <owners>Infinnity Solutions</owners>`r`n" + `
+        "        <requireLicenseAcceptance>false</requireLicenseAcceptance>`r`n" + `
+        "        <description>Commit $commitHash</description>`r`n" + `
+        "        <copyright>Infinnity Solutions $(Get-Date -Format yyyy)</copyright>`r`n" + `
+        "        <dependencies>`r`n"
 
-			if (Test-Path $packagesConfigPath)
-			{
-				[xml] $packagesConfigXml = Get-Content $packagesConfigPath
+      # Add external dependencies
 
-				$packages = $packagesConfigXml.packages.package
+      $packagesConfigPath = Join-Path $project.Directory.FullName 'packages.config'
 
-				if ($packages)
-				{
-					foreach ($package in $packages)
-					{
-						$projectNuspec = $projectNuspec + "            <dependency id=""$($package.id)"" version=""[$($package.version)]"" />`r`n"
-					}
-				}
-			}
+      if (Test-Path $packagesConfigPath) {
+        [xml] $packagesConfigXml = Get-Content $packagesConfigPath
 
-			$projectRefs += $projectXml.Project.ItemGroup.Reference.HintPath | Where { $_ -like '..\packages\*.dll' } | % { $_ -replace '^\.\.\\packages\\', '' }
+        $packages = $packagesConfigXml.packages.package
 
-			# Add internal dependencies
+        if ($packages) {
+          foreach ($package in $packages) {
+            $projectNuspec = $projectNuspec + "            <dependency id=""$($package.id)"" version=""[$($package.version)]"" />`r`n"
+          }
+        }
+      }
 
-			$projectReferences = $projectXml.Project.ItemGroup.ProjectReference.Name | Sort-Object | Get-Unique -AsString
+      $projectRefs += $projectXml.Project.ItemGroup.Reference.HintPath | Where { $_ -like '..\packages\*.dll' } | % { $_ -replace '^\.\.\\packages\\', '' }
 
-			if ($projectReferences)
-			{
-				foreach ($projectReference in $projectReferences)
-				{
-					$projectNuspec = $projectNuspec + "            <dependency id=""$projectReference"" version=""[$version]"" />`r`n"
-					$projectRefs += "$projectReference.$version\lib\$framework\$projectReference.dll"
-				}
-			}
+      # Add internal dependencies
 
-			$projectNuspec = $projectNuspec + `
-				"        </dependencies>`r`n" + `
-				"    </metadata>`r`n" + `
-				"    <files>`r`n"
+      $projectReferences = $projectXml.Project.ItemGroup.ProjectReference.Name | Sort-Object | Get-Unique -AsString
 
-			# Add project assembly
+      if ($projectReferences) {
+        foreach ($projectReference in $projectReferences) {
+          $projectNuspec = $projectNuspec + "            <dependency id=""$projectReference"" version=""[$version]"" />`r`n"
+          $projectRefs += "$projectReference.$version\lib\$framework\$projectReference.dll"
+        }
+      }
 
-			$projectIsLibrary = $projectXml.Project.PropertyGroup.OutputType -like '*Library*'
-			$projectAssembly = $projectAssemblyName + $(if ($projectIsLibrary) { '.dll' } else { '.exe' })
-			$projectNuspec = $projectNuspec + "        <file target=""lib\$framework\$projectAssembly"" src=""$projectAssembly"" />`r`n"
+      $projectNuspec = $projectNuspec + `
+        "        </dependencies>`r`n" + `
+        "    </metadata>`r`n" + `
+        "    <files>`r`n"
 
-			# Add resources for ru-RU
+      # Add project assembly
 
-			if (($projectXml.Project.ItemGroup.EmbeddedResource.Include | Where { $_ -like '*.ru-RU.*' }).Count -gt 0)
-			{
-				$projectNuspec = $projectNuspec + "        <file target=""lib\$framework\ru-RU"" src=""ru-RU\$projectAssemblyName.resources.dll"" />`r`n"
-			}
+      $projectIsLibrary = $projectXml.Project.PropertyGroup.OutputType -like '*Library*'
+      $projectAssembly = $projectAssemblyName + $(if ($projectIsLibrary) { '.dll' } else { '.exe' })
+      $projectNuspec = $projectNuspec + "        <file target=""lib\$framework\$projectAssembly"" src=""$projectAssembly"" />`r`n"
 
-			# Add resources for en-US
+      # Add resources for ru-RU
 
-			if (($projectXml.Project.ItemGroup.EmbeddedResource.Include | Where { $_ -like '*.en-US.*' }).Count -gt 0)
-			{
-				$projectNuspec = $projectNuspec + "        <file target=""lib\$framework\en-US"" src=""en-US\$projectAssemblyName.resources.dll"" />`r`n"
-			}
+      if (($projectXml.Project.ItemGroup.EmbeddedResource.Include | Where { $_ -like '*.ru-RU.*' }).Count -gt 0) {
+        $projectNuspec = $projectNuspec + "        <file target=""lib\$framework\ru-RU"" src=""ru-RU\$projectAssemblyName.resources.dll"" />`r`n"
+      }
 
-			# Add symbol file
+      # Add resources for en-US
 
-			$projectNuspec = $projectNuspec + "        <file target=""lib\$framework"" src=""$projectAssemblyName.pdb"" />`r`n"
+      if (($projectXml.Project.ItemGroup.EmbeddedResource.Include | Where { $_ -like '*.en-US.*' }).Count -gt 0) {
+        $projectNuspec = $projectNuspec + "        <file target=""lib\$framework\en-US"" src=""en-US\$projectAssemblyName.resources.dll"" />`r`n"
+      }
 
-			# Add XML-documentation
+      # Add symbol file
 
-			if (($projectXml.Project.PropertyGroup.DocumentationFile | Where { $_ }).Count -gt 0)
-			{
-				$projectNuspec = $projectNuspec + "        <file target=""lib\$framework"" src=""$projectAssemblyName.xml"" />`r`n"
-			}
+      $projectNuspec = $projectNuspec + "        <file target=""lib\$framework"" src=""$projectAssemblyName.pdb"" />`r`n"
 
-			# Add app config-file
+      # Add XML-documentation
 
-			if (($projectXml.Project.ItemGroup.None.Include) -contains 'App.config')
-			{
-				$projectNuspec = $projectNuspec + "        <file target=""lib\$framework"" src=""$projectAssembly.config"" />`r`n"
-			}
+      if (($projectXml.Project.PropertyGroup.DocumentationFile | Where { $_ }).Count -gt 0) {
+        $projectNuspec = $projectNuspec + "        <file target=""lib\$framework"" src=""$projectAssemblyName.xml"" />`r`n"
+      }
 
-			# Add log config-file
+      # Add app config-file
 
-			if (($projectXml.Project.ItemGroup.None.Include) -contains 'AppLog.config')
-			{
-				$projectNuspec = $projectNuspec + "        <file target=""lib\$framework"" src=""AppLog.config"" />`r`n"
-			}
+      if (($projectXml.Project.ItemGroup.None.Include) -contains 'App.config') {
+        $projectNuspec = $projectNuspec + "        <file target=""lib\$framework"" src=""$projectAssembly.config"" />`r`n"
+      }
 
-			$projectNuspec = $projectNuspec + `
-				"        <file target=""lib\$framework\$projectName.references"" src=""$projectName.references"" />`r`n" + `
-				"    </files>`r`n" + `
-				"</package>"
+      # Add log config-file
 
-			Set-Content (Join-Path $outputDir "$projectName.references") -Value ($projectRefs | Sort-Object | Get-Unique -AsString)
-			Set-Content (Join-Path $outputDir ($projectName + '.nuspec')) -Value $projectNuspec
-		}
-	}
+      if (($projectXml.Project.ItemGroup.None.Include) -contains 'AppLog.config') {
+        $projectNuspec = $projectNuspec + "        <file target=""lib\$framework"" src=""AppLog.config"" />`r`n"
+      }
+
+      $projectNuspec = $projectNuspec + `
+        "        <file target=""lib\$framework\$projectName.references"" src=""$projectName.references"" />`r`n" + `
+        "    </files>`r`n" + `
+        "</package>"
+
+      Set-Content (Join-Path $outputDir "$projectName.references") -Value ($projectRefs | Sort-Object | Get-Unique -AsString)
+      Set-Content (Join-Path $outputDir ($projectName + '.nuspec')) -Value $projectNuspec
+    }
+  }
 }

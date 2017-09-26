@@ -111,7 +111,7 @@ namespace Infinni.Node.Packaging
             var packageIdentity = new PackageIdentity(packageId, packageNuGetVersion);
 
             // Каталог для установки пакетов (каталог packages)
-            NuGetProject folderProject = new InfinniFolderNuGetProject(_packagesPath);
+            NuGetProject folderProject = new InfinniFolderNuGetProject(_packagesPath, _logger);
             
             // Менеджер для управления пакетами
             var packageManager = new NuGetPackageManager(packageRepositoryProvider, settings, _packagesPath);
@@ -284,12 +284,19 @@ namespace Infinni.Node.Packaging
 
             if (compatibleItems == null)
             {
-                var portableFramework = reader.GetSupportedFrameworks().FirstOrDefault(i => string.Equals(i.Framework, ".NETPortable", StringComparison.OrdinalIgnoreCase));
+                var portableFramework = reader.GetSupportedFrameworks()
+                                              .FirstOrDefault(i => string.Equals(i.Framework, FrameworkConstants.FrameworkIdentifiers.NetPlatform, StringComparison.OrdinalIgnoreCase));
 
                 if (portableFramework != null && compatibilityProvider.IsCompatible(targetFramework, portableFramework))
                 {
                     compatibleItems = items.FirstOrDefault(i => NuGetFrameworkComparer.Compare(i.TargetFramework, portableFramework) == 0);
                 }
+            }
+
+            if (compatibleItems==null)
+            {
+                // TODO Update Nuget packages, add .NETStandard compability
+                compatibleItems = items.FirstOrDefault(i => i.TargetFramework.DotNetFrameworkName.Contains(FrameworkConstants.FrameworkIdentifiers.NetStandard));
             }
 
             return compatibleItems;
