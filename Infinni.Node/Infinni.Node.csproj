@@ -224,7 +224,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="App.config" />
-    <None Include="Install.bat" />
+    <None Include="Install_Infinni.Node.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Install.ps1" />
     <None Include="packages.config" />
   </ItemGroup>
