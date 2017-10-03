@@ -153,6 +153,12 @@ namespace Infinni.Node.CommandHandlers
             {
                 var version = AppSettings.GetValue("NodeWorkerVersion");
 
+                // TODO Remove hardcoded package version.
+                if (string.IsNullOrEmpty(version) && AppSettings.GetValue("NetFrameworkVersion") == "net452")
+                {
+                    version = "1.2.0.48 - master";
+                }
+
                 context.ServiceHostPackageContent = await context.PackageRepository.InstallPackage(InfinniPlatformServiceHost, version, true);
             }
             catch (InvalidOperationException exception)
