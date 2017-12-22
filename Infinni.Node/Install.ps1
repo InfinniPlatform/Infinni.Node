@@ -30,7 +30,7 @@ if (-not (Test-Path $nugetPath))
 
 Write-Host 'Find Infinni.Node version'
 
-$sources = 'https://api.nuget.org/v3/index.json;http://nuget.org/api/v2;http://nuget.infinnity.ru/api/v2'
+$sources = 'https://api.nuget.org/v3/index.json;http://nuget.org/api/v2;https://www.myget.org/F/infinniplatform;'
 
 if (-not $version)
 {
