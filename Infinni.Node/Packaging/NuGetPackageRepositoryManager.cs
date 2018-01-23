@@ -111,7 +111,7 @@ namespace Infinni.Node.Packaging
             var packageIdentity = new PackageIdentity(packageId, packageNuGetVersion);
 
             // Каталог для установки пакетов (каталог packages)
-            NuGetProject folderProject = new InfinniFolderNuGetProject(_packagesPath, _logger);
+            NuGetProject folderProject = new InfinniFolderNuGetProject(_packagesPath);
             
             // Менеджер для управления пакетами
             var packageManager = new NuGetPackageManager(packageRepositoryProvider, settings, _packagesPath);
